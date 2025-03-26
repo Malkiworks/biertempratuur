@@ -415,7 +415,8 @@ function setupProductCarousel() {
         position: 'relative',
         height: '500px',
         margin: '0 auto',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        width: '100%'
     });
     
     // Set all products to absolute position for the carousel
@@ -425,7 +426,7 @@ function setupProductCarousel() {
             top: 0,
             left: '50%',
             xPercent: -50,
-            x: i === 0 ? 0 : -150, // Start position
+            x: i === 0 ? 0 : window.innerWidth, // Position off-screen to the right
             opacity: i === 0 ? 1 : 0,
             scale: i === 0 ? 1 : 0.8,
             width: '85%',
@@ -445,7 +446,7 @@ function setupProductCarousel() {
                 productItems.push(productItems.shift());
                 // Reset the moved product
                 gsap.set(firstProduct, { 
-                    x: -150, 
+                    x: window.innerWidth, 
                     opacity: 0, 
                     scale: 0.8,
                     zIndex: 1 
@@ -458,13 +459,13 @@ function setupProductCarousel() {
             // Stagger the start time for each product
             const staggerDelay = i * 4; // 4 seconds between each product start
             
-            // Enter from left
+            // Enter from right side of screen
             tl.to(item, {
                 x: 0,
                 opacity: 1,
                 scale: 1,
                 zIndex: 10,
-                duration: 1,
+                duration: 0.8,
                 ease: "back.out(1.2)",
             }, staggerDelay);
             
@@ -473,12 +474,12 @@ function setupProductCarousel() {
                 x: 0,
                 opacity: 1,
                 scale: 1,
-                duration: 2
-            }, staggerDelay + 1);
+                duration: 2.2
+            }, staggerDelay + 0.8);
             
-            // Exit to right
+            // Exit to left side of screen
             tl.to(item, {
-                x: 150,
+                x: -window.innerWidth,
                 opacity: 0,
                 scale: 0.8,
                 zIndex: 1,
@@ -496,6 +497,12 @@ function setupProductCarousel() {
     
     // Start the animation on mobile only
     if (window.innerWidth <= 768) {
+        // Adjust products container height based on screen size
+        const containerHeight = Math.min(Math.max(window.innerHeight * 0.6, 450), 550);
+        gsap.set(productsContainer, {
+            height: containerHeight
+        });
+
         // Create a progress indicator
         progressContainer = document.createElement('div');
         progressContainer.className = 'carousel-progress';
@@ -503,7 +510,7 @@ function setupProductCarousel() {
             display: 'flex',
             justifyContent: 'center',
             gap: '8px',
-            margin: '20px auto',
+            margin: '15px auto 25px',
             position: 'relative',
             zIndex: 20
         });
@@ -513,11 +520,13 @@ function setupProductCarousel() {
             const dot = document.createElement('div');
             dot.className = 'carousel-dot';
             Object.assign(dot.style, {
-                width: '8px',
-                height: '8px',
+                width: '10px',
+                height: '10px',
                 borderRadius: '50%',
                 backgroundColor: i === 0 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)',
-                transition: 'background-color 0.3s ease'
+                transition: 'background-color 0.3s ease',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
             });
             progressContainer.appendChild(dot);
         });
@@ -528,8 +537,56 @@ function setupProductCarousel() {
         const dots = document.querySelectorAll('.carousel-dot');
         let activeIndex = 0;
         
+        // Add auto-play/pause controls
+        const controlsContainer = document.createElement('div');
+        controlsContainer.className = 'carousel-controls';
+        Object.assign(controlsContainer.style, {
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '20px',
+            margin: '0 auto 20px',
+            position: 'relative',
+            zIndex: 20
+        });
+        
+        // Create play/pause button
+        const playPauseBtn = document.createElement('button');
+        playPauseBtn.className = 'carousel-control';
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        Object.assign(playPauseBtn.style, {
+            background: 'rgba(0, 0, 0, 0.3)',
+            border: 'none',
+            borderRadius: '50%',
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+        });
+        
+        controlsContainer.appendChild(playPauseBtn);
+        
+        // Insert controls below progress dots
+        progressContainer.parentNode.insertBefore(controlsContainer, progressContainer.nextSibling);
+        
         // Start the product loop
         productLoop = createProductLoop();
+        let isPlaying = true;
+        
+        // Play/pause functionality
+        playPauseBtn.addEventListener('click', function() {
+            if (isPlaying) {
+                productLoop.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                productLoop.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+            isPlaying = !isPlaying;
+        });
         
         // Update the active dot indicator
         productLoop.eventCallback('onUpdate', () => {
@@ -553,10 +610,18 @@ function setupProductCarousel() {
             trigger: '.cold-section',
             start: 'top 80%',
             end: 'bottom 20%',
-            onEnter: () => productLoop.play(),
-            onLeave: () => productLoop.pause(),
-            onEnterBack: () => productLoop.play(),
-            onLeaveBack: () => productLoop.pause()
+            onEnter: () => {
+                if (isPlaying) productLoop.play();
+            },
+            onLeave: () => {
+                if (isPlaying) productLoop.pause();
+            },
+            onEnterBack: () => {
+                if (isPlaying) productLoop.play();
+            },
+            onLeaveBack: () => {
+                if (isPlaying) productLoop.pause();
+            }
         });
     }
     
@@ -565,6 +630,17 @@ function setupProductCarousel() {
         kill: function() {
             if (productLoop) productLoop.kill();
             if (scrollTriggerInstance) scrollTriggerInstance.kill();
+            
+            // Remove the controls container if it exists
+            const controlsContainer = document.querySelector('.carousel-controls');
+            if (controlsContainer) {
+                // Remove event listeners first
+                const playPauseBtn = controlsContainer.querySelector('.carousel-control');
+                if (playPauseBtn) {
+                    playPauseBtn.removeEventListener('click', playPauseBtn.onclick);
+                }
+                controlsContainer.remove();
+            }
         }
     };
 }
