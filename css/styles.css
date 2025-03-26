@@ -640,13 +640,11 @@ button:hover ~ .cursor-trailer,
 
 /* ===== Product Styles ===== */
 .products-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    margin: 40px auto;
     position: relative;
     z-index: 10;
     max-width: 1200px;
+    margin: 40px auto;
+    overflow: hidden;
 }
 
 /* Style for each product item */
@@ -661,8 +659,6 @@ button:hover ~ .cursor-trailer,
     display: flex;
     flex-direction: column;
     position: relative;
-    z-index: 10;
-    transform: none !important;
 }
 
 /* Product variations for visual diversity */
@@ -680,12 +676,6 @@ button:hover ~ .cursor-trailer,
 
 .product-item:nth-child(4) .product-image-container {
     background-image: linear-gradient(45deg, #553322, #997766);
-}
-
-.product-item:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 
-                0 0 30px rgba(100, 200, 255, 0.2);
 }
 
 .product-image-container {
@@ -805,6 +795,60 @@ button:hover ~ .cursor-trailer,
     color: var(--accent-color);
     font-size: 1.1rem;
     margin-right: 8px;
+}
+
+/* Carousel animation */
+.carousel-progress {
+    margin: 15px auto 25px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    z-index: 20;
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: background-color 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.carousel-dot.active {
+    background-color: var(--accent-color);
+}
+
+.carousel-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 0 auto 20px;
+    position: relative;
+    z-index: 20;
+}
+
+.carousel-control {
+    background: rgba(0, 0, 0, 0.3);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.carousel-control:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
 }
 
 /* ===== CTA Container ===== */

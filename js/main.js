@@ -492,144 +492,120 @@ function setupProductCarousel() {
     };
     
     let productLoop;
-    let scrollTriggerInstance;
     let progressContainer;
     
-    // Start the animation on mobile only
-    if (window.innerWidth <= 768) {
-        // Adjust products container height based on screen size
-        const containerHeight = Math.min(Math.max(window.innerHeight * 0.6, 450), 550);
-        gsap.set(productsContainer, {
-            height: containerHeight
-        });
+    // Adjust container height based on screen size
+    const containerHeight = Math.min(Math.max(window.innerHeight * 0.5, 450), 550);
+    gsap.set(productsContainer, {
+        height: containerHeight
+    });
 
-        // Create a progress indicator
-        progressContainer = document.createElement('div');
-        progressContainer.className = 'carousel-progress';
-        Object.assign(progressContainer.style, {
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-            margin: '15px auto 25px',
-            position: 'relative',
-            zIndex: 20
-        });
-        
-        // Add dots for each product
-        productItems.forEach((_, i) => {
-            const dot = document.createElement('div');
-            dot.className = 'carousel-dot';
-            Object.assign(dot.style, {
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                backgroundColor: i === 0 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)',
-                transition: 'background-color 0.3s ease',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-            });
-            progressContainer.appendChild(dot);
-        });
-        
-        // Insert the progress container after the products container
-        productsContainer.parentNode.insertBefore(progressContainer, productsContainer.nextSibling);
-        
-        const dots = document.querySelectorAll('.carousel-dot');
-        let activeIndex = 0;
-        
-        // Add auto-play/pause controls
-        const controlsContainer = document.createElement('div');
-        controlsContainer.className = 'carousel-controls';
-        Object.assign(controlsContainer.style, {
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '20px',
-            margin: '0 auto 20px',
-            position: 'relative',
-            zIndex: 20
-        });
-        
-        // Create play/pause button
-        const playPauseBtn = document.createElement('button');
-        playPauseBtn.className = 'carousel-control';
-        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        Object.assign(playPauseBtn.style, {
-            background: 'rgba(0, 0, 0, 0.3)',
-            border: 'none',
+    // Create a progress indicator
+    progressContainer = document.createElement('div');
+    progressContainer.className = 'carousel-progress';
+    Object.assign(progressContainer.style, {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '8px',
+        margin: '15px auto 25px',
+        position: 'relative',
+        zIndex: 20
+    });
+    
+    // Add dots for each product
+    productItems.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'carousel-dot';
+        Object.assign(dot.style, {
+            width: '10px',
+            height: '10px',
             borderRadius: '50%',
-            width: '36px',
-            height: '36px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+            backgroundColor: i === 0 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)',
+            transition: 'background-color 0.3s ease',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
         });
+        progressContainer.appendChild(dot);
+    });
+    
+    // Insert the progress container after the products container
+    productsContainer.parentNode.insertBefore(progressContainer, productsContainer.nextSibling);
+    
+    const dots = document.querySelectorAll('.carousel-dot');
+    let activeIndex = 0;
+    
+    // Add auto-play/pause controls
+    const controlsContainer = document.createElement('div');
+    controlsContainer.className = 'carousel-controls';
+    Object.assign(controlsContainer.style, {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '20px',
+        margin: '0 auto 20px',
+        position: 'relative',
+        zIndex: 20
+    });
+    
+    // Create play/pause button
+    const playPauseBtn = document.createElement('button');
+    playPauseBtn.className = 'carousel-control';
+    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    Object.assign(playPauseBtn.style, {
+        background: 'rgba(0, 0, 0, 0.3)',
+        border: 'none',
+        borderRadius: '50%',
+        width: '36px',
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        cursor: 'pointer',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+    });
+    
+    controlsContainer.appendChild(playPauseBtn);
+    
+    // Insert controls below progress dots
+    progressContainer.parentNode.insertBefore(controlsContainer, progressContainer.nextSibling);
+    
+    // Start the product loop immediately
+    productLoop = createProductLoop();
+    let isPlaying = true;
+    
+    // Play/pause functionality
+    playPauseBtn.addEventListener('click', function() {
+        if (isPlaying) {
+            productLoop.pause();
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        } else {
+            productLoop.play();
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+        isPlaying = !isPlaying;
+    });
+    
+    // Update the active dot indicator
+    productLoop.eventCallback('onUpdate', () => {
+        // Calculate which product is currently active based on the timeline progress
+        const totalTime = productLoop.totalDuration();
+        const cycleTime = totalTime / productItems.length;
+        const progress = productLoop.time() % totalTime;
+        const newActiveIndex = Math.floor((progress % totalTime) / cycleTime);
         
-        controlsContainer.appendChild(playPauseBtn);
-        
-        // Insert controls below progress dots
-        progressContainer.parentNode.insertBefore(controlsContainer, progressContainer.nextSibling);
-        
-        // Start the product loop
-        productLoop = createProductLoop();
-        let isPlaying = true;
-        
-        // Play/pause functionality
-        playPauseBtn.addEventListener('click', function() {
-            if (isPlaying) {
-                productLoop.pause();
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            } else {
-                productLoop.play();
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            }
-            isPlaying = !isPlaying;
-        });
-        
-        // Update the active dot indicator
-        productLoop.eventCallback('onUpdate', () => {
-            // Calculate which product is currently active based on the timeline progress
-            const totalTime = productLoop.totalDuration();
-            const cycleTime = totalTime / productItems.length;
-            const progress = productLoop.time() % totalTime;
-            const newActiveIndex = Math.floor((progress % totalTime) / cycleTime);
-            
-            if (newActiveIndex !== activeIndex) {
-                // Update dots
-                dots.forEach((dot, i) => {
-                    dot.style.backgroundColor = i === newActiveIndex ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)';
-                });
-                activeIndex = newActiveIndex;
-            }
-        });
-        
-        // Create ScrollTrigger to control the animation
-        scrollTriggerInstance = ScrollTrigger.create({
-            trigger: '.cold-section',
-            start: 'top 80%',
-            end: 'bottom 20%',
-            onEnter: () => {
-                if (isPlaying) productLoop.play();
-            },
-            onLeave: () => {
-                if (isPlaying) productLoop.pause();
-            },
-            onEnterBack: () => {
-                if (isPlaying) productLoop.play();
-            },
-            onLeaveBack: () => {
-                if (isPlaying) productLoop.pause();
-            }
-        });
-    }
+        if (newActiveIndex !== activeIndex) {
+            // Update dots
+            dots.forEach((dot, i) => {
+                dot.style.backgroundColor = i === newActiveIndex ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)';
+            });
+            activeIndex = newActiveIndex;
+        }
+    });
     
     // Return an object with a kill method to clean up
     return {
         kill: function() {
             if (productLoop) productLoop.kill();
-            if (scrollTriggerInstance) scrollTriggerInstance.kill();
             
             // Remove the controls container if it exists
             const controlsContainer = document.querySelector('.carousel-controls');
@@ -640,6 +616,12 @@ function setupProductCarousel() {
                     playPauseBtn.removeEventListener('click', playPauseBtn.onclick);
                 }
                 controlsContainer.remove();
+            }
+            
+            // Remove progress container if it exists
+            const progressContainer = document.querySelector('.carousel-progress');
+            if (progressContainer) {
+                progressContainer.remove();
             }
         }
     };
@@ -699,45 +681,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 productCarousel = null;
             }
             
-            // Initialize appropriate animation based on viewport width
-            if (window.innerWidth > 768) {
-                // On desktop, use scroll effect animation
-                productItems.forEach(item => {
-                    item.style.opacity = '0';
-                    item.style.visibility = 'visible';
-                    item.style.transform = 'translateX(-50px)';
-                });
-                
-                // Staggered left to right animation with slight bounce
-                gsap.to(productItems, {
-                    x: 0,
-                    opacity: 1,
-                    stagger: { 
-                        each: 0.1,
-                        from: "start", 
-                        grid: "auto",
-                        ease: "power2.out"
-                    },
-                    duration: 0.8,
-                    ease: "back.out(1.2)",
-                    scrollTrigger: {
-                        trigger: '.products-header',
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
-                    }
-                });
-                
-                // Setup scroll-based animation
-                productScrollEffect = setupProductsScrollEffect();
-            } else {
-                // On mobile, use the carousel animation
-                productItems.forEach(item => {
-                    item.style.visibility = 'visible';
-                });
-                
-                // Setup the carousel effect
-                productCarousel = setupProductCarousel();
-            }
+            // Setup the carousel effect for both mobile and desktop
+            productItems.forEach(item => {
+                item.style.visibility = 'visible';
+            });
+            
+            // Setup the carousel effect
+            productCarousel = setupProductCarousel();
         }
         
         // Initialize animations
@@ -753,26 +703,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 250);
         });
         
-        // Add hover effects (for desktop)
+        // Add hover effects
         productItems.forEach(item => {
             item.addEventListener('mouseenter', () => {
-                if (window.innerWidth > 768) {
-                    gsap.to(item, {
-                        y: -10,
-                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 15px 30px rgba(100, 200, 255, 0.3)',
-                        duration: 0.3
-                    });
-                }
+                gsap.to(item, {
+                    scale: 1.05,
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 15px 30px rgba(100, 200, 255, 0.3)',
+                    duration: 0.3
+                });
             });
             
             item.addEventListener('mouseleave', () => {
-                if (window.innerWidth > 768) {
-                    gsap.to(item, {
-                        y: 0,
-                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-                        duration: 0.3
-                    });
-                }
+                gsap.to(item, {
+                    scale: 1,
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+                    duration: 0.3
+                });
             });
         });
     }
