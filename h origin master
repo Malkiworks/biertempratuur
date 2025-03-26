@@ -1,0 +1,5 @@
+[33mcommit a376aa2a74b84c6758608fecfbb26bae5ff6768f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Joshua <joshmalkipc@gmail.com>
+Date:   Wed Mar 26 14:48:44 2025 +0200
+
+    Completely reimplement carousel as a true drag-to-scroll with auto-scrolling

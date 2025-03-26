@@ -652,6 +652,10 @@ button:hover ~ .cursor-trailer,
     max-width: 1200px;
     margin: 40px auto;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    touch-action: pan-x; /* Only allow horizontal panning */
 }
 
 .products-container::-webkit-scrollbar {
@@ -669,10 +673,12 @@ button:hover ~ .cursor-trailer,
     transition: all 0.4s ease;
     min-height: 500px;
     position: relative;
+    will-change: transform; /* Optimize performance */
+    transform: translateZ(0); /* Force hardware acceleration */
 }
 
 .product-item:hover {
-    transform: translateY(-5px);
+    transform: translateY(-5px) translateZ(0);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
 
@@ -695,6 +701,7 @@ button:hover ~ .cursor-trailer,
     background: linear-gradient(to left, var(--cold-color-1), transparent);
     pointer-events: none;
     z-index: 2;
+    transition: opacity 0.3s ease;
 }
 
 .scroll-gradient-left {
@@ -738,7 +745,7 @@ button:hover ~ .cursor-trailer,
     transform: scale(1.1);
 }
 
-/* Product features */
+/* Product image container */
 .product-image-container {
     position: relative;
     width: 100%;
@@ -853,6 +860,10 @@ button:hover ~ .cursor-trailer,
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    .products-wrapper {
+        padding: 0 15px;
+    }
+    
     .products-container {
         gap: 15px;
         padding: 15px 0;
@@ -870,6 +881,15 @@ button:hover ~ .cursor-trailer,
     .scroll-gradient-right,
     .scroll-gradient-left {
         width: 40px;
+    }
+    
+    /* Additional styles to ensure proper touch handling */
+    body.touching {
+        overflow: hidden;
+    }
+    
+    .product-item:active {
+        transform: translateY(0) translateZ(0);
     }
 }
 
