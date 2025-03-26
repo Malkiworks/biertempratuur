@@ -413,7 +413,7 @@ function setupProductCarousel() {
     gsap.set(productsContainer, {
         display: 'block',
         position: 'relative',
-        height: '450px',
+        height: '500px',
         margin: '0 auto',
         overflow: 'hidden'
     });
@@ -428,8 +428,8 @@ function setupProductCarousel() {
             x: i === 0 ? 0 : -150, // Start position
             opacity: i === 0 ? 1 : 0,
             scale: i === 0 ? 1 : 0.8,
-            width: '80%',
-            maxWidth: '300px',
+            width: '85%',
+            maxWidth: '350px',
             margin: '0 auto',
             zIndex: i === 0 ? 10 : 1
         });
