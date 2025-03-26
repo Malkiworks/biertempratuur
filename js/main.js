@@ -401,231 +401,155 @@ function setupProductsScrollEffect() {
     };
 }
 
-// Setup continuous product carousel effect
+// Product carousel setup
 function setupProductCarousel() {
-    const productsContainer = document.querySelector('.products-container');
-    if (!productsContainer) return null;
+    const container = document.querySelector('.products-container');
+    const products = document.querySelectorAll('.product-item');
+    const productCount = products.length;
     
-    const productItems = gsap.utils.toArray('.product-item');
-    if (productItems.length === 0) return null;
+    // Set container height based on tallest product
+    const maxHeight = Math.max(...Array.from(products).map(p => p.offsetHeight));
+    container.style.height = `${maxHeight}px`;
     
-    // Clear existing grid layout to allow for absolute positioning
-    gsap.set(productsContainer, {
-        display: 'block',
-        position: 'relative',
-        height: '500px',
-        margin: '0 auto',
-        overflow: 'hidden',
-        width: '100%'
-    });
+    // Initialize state
+    let isDragging = false;
+    let startX = 0;
+    let scrollLeft = 0;
+    let autoScrolling = true;
+    let autoScrollInterval = null;
     
-    // Set all products to absolute position for the carousel
-    productItems.forEach((item, i) => {
-        gsap.set(item, {
+    // Set initial positions
+    products.forEach((product, index) => {
+        gsap.set(product, {
             position: 'absolute',
-            top: 0,
             left: '50%',
             xPercent: -50,
-            x: i === 0 ? 0 : window.innerWidth, // Position off-screen to the right
-            opacity: i === 0 ? 1 : 0,
-            scale: i === 0 ? 1 : 0.8,
-            width: '85%',
-            maxWidth: '350px',
-            margin: '0 auto',
-            zIndex: i === 0 ? 10 : 1
+            opacity: 0,
+            scale: 0.8,
+            zIndex: 0,
+            display: 'block'
         });
     });
     
-    // Create the looping sequence
-    const createProductLoop = () => {
-        const tl = gsap.timeline({
-            repeat: -1, // Infinite repeat
-            onRepeat: () => {
-                // Move the first item to the end to create seamless loop
-                const firstProduct = productItems[0];
-                productItems.push(productItems.shift());
-                // Reset the moved product
-                gsap.set(firstProduct, { 
-                    x: window.innerWidth, 
-                    opacity: 0, 
-                    scale: 0.8,
-                    zIndex: 1 
-                });
+    // Set initial visible product
+    gsap.set(products[0], {
+        opacity: 1,
+        scale: 1,
+        zIndex: 2
+    });
+    
+    // Add drag functionality
+    function handleMouseDown(e) {
+        isDragging = true;
+        startX = e.pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+        stopAutoScroll();
+    }
+    
+    function handleTouchStart(e) {
+        isDragging = true;
+        startX = e.touches[0].pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+    }
+    
+    function handleMouseMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - container.offsetLeft;
+        const walk = (x - startX) * 2;
+        container.scrollLeft = scrollLeft - walk;
+    }
+    
+    function handleTouchMove(e) {
+        if (!isDragging) return;
+        const x = e.touches[0].pageX - container.offsetLeft;
+        const walk = (x - startX) * 2;
+        container.scrollLeft = scrollLeft - walk;
+    }
+    
+    function handleMouseUp() {
+        isDragging = false;
+        if (autoScrolling) {
+            startAutoScroll();
+        }
+    }
+    
+    // Auto-scroll functionality
+    function startAutoScroll() {
+        if (autoScrollInterval) return;
+        
+        autoScrollInterval = setInterval(() => {
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            
+            if (container.scrollLeft >= maxScroll - 1) {
+                container.scrollLeft = 0;
+            } else {
+                container.scrollLeft += 2;
             }
-        });
-        
-        // Animation for each product
-        productItems.forEach((item, i) => {
-            // Stagger the start time for each product
-            const staggerDelay = i * 4; // 4 seconds between each product start
-            
-            // Enter from right side of screen
-            tl.to(item, {
-                x: 0,
-                opacity: 1,
-                scale: 1,
-                zIndex: 10,
-                duration: 0.8,
-                ease: "back.out(1.2)",
-            }, staggerDelay);
-            
-            // Stay visible
-            tl.to(item, {
-                x: 0,
-                opacity: 1,
-                scale: 1,
-                duration: 2.2
-            }, staggerDelay + 0.8);
-            
-            // Exit to left side of screen
-            tl.to(item, {
-                x: -window.innerWidth,
-                opacity: 0,
-                scale: 0.8,
-                zIndex: 1,
-                duration: 1,
-                ease: "power1.in"
-            }, staggerDelay + 3);
-        });
-        
-        return tl;
-    };
+        }, 20);
+    }
     
-    let productLoop;
-    let progressContainer;
-    
-    // Adjust container height based on screen size
-    const containerHeight = Math.min(Math.max(window.innerHeight * 0.5, 450), 550);
-    gsap.set(productsContainer, {
-        height: containerHeight
-    });
-
-    // Create a progress indicator
-    progressContainer = document.createElement('div');
-    progressContainer.className = 'carousel-progress';
-    Object.assign(progressContainer.style, {
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '8px',
-        margin: '15px auto 25px',
-        position: 'relative',
-        zIndex: 20
-    });
-    
-    // Add dots for each product
-    productItems.forEach((_, i) => {
-        const dot = document.createElement('div');
-        dot.className = 'carousel-dot';
-        Object.assign(dot.style, {
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            backgroundColor: i === 0 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)',
-            transition: 'background-color 0.3s ease',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-        });
-        progressContainer.appendChild(dot);
-    });
-    
-    // Insert the progress container after the products container
-    productsContainer.parentNode.insertBefore(progressContainer, productsContainer.nextSibling);
-    
-    const dots = document.querySelectorAll('.carousel-dot');
-    let activeIndex = 0;
-    
-    // Add auto-play/pause controls
-    const controlsContainer = document.createElement('div');
-    controlsContainer.className = 'carousel-controls';
-    Object.assign(controlsContainer.style, {
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '20px',
-        margin: '0 auto 20px',
-        position: 'relative',
-        zIndex: 20
-    });
-    
-    // Create play/pause button
-    const playPauseBtn = document.createElement('button');
-    playPauseBtn.className = 'carousel-control';
-    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-    Object.assign(playPauseBtn.style, {
-        background: 'rgba(0, 0, 0, 0.3)',
-        border: 'none',
-        borderRadius: '50%',
-        width: '36px',
-        height: '36px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        cursor: 'pointer',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
-    });
-    
-    controlsContainer.appendChild(playPauseBtn);
-    
-    // Insert controls below progress dots
-    progressContainer.parentNode.insertBefore(controlsContainer, progressContainer.nextSibling);
-    
-    // Start the product loop immediately
-    productLoop = createProductLoop();
-    let isPlaying = true;
-    
-    // Play/pause functionality
-    playPauseBtn.addEventListener('click', function() {
-        if (isPlaying) {
-            productLoop.pause();
-            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-        } else {
-            productLoop.play();
-            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    function stopAutoScroll() {
+        if (autoScrollInterval) {
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = null;
         }
-        isPlaying = !isPlaying;
-    });
+    }
     
-    // Update the active dot indicator
-    productLoop.eventCallback('onUpdate', () => {
-        // Calculate which product is currently active based on the timeline progress
-        const totalTime = productLoop.totalDuration();
-        const cycleTime = totalTime / productItems.length;
-        const progress = productLoop.time() % totalTime;
-        const newActiveIndex = Math.floor((progress % totalTime) / cycleTime);
-        
-        if (newActiveIndex !== activeIndex) {
-            // Update dots
-            dots.forEach((dot, i) => {
-                dot.style.backgroundColor = i === newActiveIndex ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)';
-            });
-            activeIndex = newActiveIndex;
-        }
-    });
+    // Add event listeners
+    container.addEventListener('mousedown', handleMouseDown);
+    container.addEventListener('touchstart', handleTouchStart);
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('touchmove', handleTouchMove);
+    container.addEventListener('mouseleave', handleMouseUp);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchend', handleMouseUp);
     
-    // Return an object with a kill method to clean up
+    // Add play/pause button
+    const controls = document.createElement('div');
+    controls.className = 'carousel-controls';
+    controls.innerHTML = `
+        <button class="carousel-control" onclick="toggleAutoScroll()">
+            ${autoScrolling ? 'Pause' : 'Play'}
+        </button>
+    `;
+    container.parentNode.insertBefore(controls, container);
+    
+    // Start auto-scrolling
+    if (autoScrolling) {
+        startAutoScroll();
+    }
+    
+    // Cleanup function
     return {
-        kill: function() {
-            if (productLoop) productLoop.kill();
-            
-            // Remove the controls container if it exists
-            const controlsContainer = document.querySelector('.carousel-controls');
-            if (controlsContainer) {
-                // Remove event listeners first
-                const playPauseBtn = controlsContainer.querySelector('.carousel-control');
-                if (playPauseBtn) {
-                    playPauseBtn.removeEventListener('click', playPauseBtn.onclick);
-                }
-                controlsContainer.remove();
-            }
-            
-            // Remove progress container if it exists
-            const progressContainer = document.querySelector('.carousel-progress');
-            if (progressContainer) {
-                progressContainer.remove();
-            }
+        kill: () => {
+            container.removeEventListener('mousedown', handleMouseDown);
+            container.removeEventListener('touchstart', handleTouchStart);
+            container.removeEventListener('mousemove', handleMouseMove);
+            container.removeEventListener('touchmove', handleTouchMove);
+            container.removeEventListener('mouseleave', handleMouseUp);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('touchend', handleMouseUp);
+            stopAutoScroll();
+            controls.remove();
         }
     };
 }
+
+// Global function to toggle auto-scroll
+window.toggleAutoScroll = function() {
+    const container = document.querySelector('.products-container');
+    const button = container.parentNode.querySelector('.carousel-control');
+    const isAutoScrolling = button.textContent === 'Pause';
+    
+    if (isAutoScrolling) {
+        stopAutoScroll();
+        button.textContent = 'Play';
+    } else {
+        startAutoScroll();
+        button.textContent = 'Pause';
+    }
+};
 
 // Make sure products are visible on page load
 document.addEventListener('DOMContentLoaded', function() {
