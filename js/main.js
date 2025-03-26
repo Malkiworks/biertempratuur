@@ -1,6 +1,22 @@
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
+// ===== Ensure page starts at the top =====
+window.onload = function() {
+    // Force scroll to top when page loads
+    window.scrollTo(0, 0);
+    
+    // Fix for browsers that might maintain scroll position
+    setTimeout(function() {
+        window.scrollTo(0, 0);
+    }, 100);
+    
+    // Clear any hash from the URL that might be causing scroll issues
+    if (window.location.hash) {
+        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+    }
+};
+
 // ===== Preloader =====
 window.addEventListener('load', () => {
     // Animate the temperature bar
@@ -19,6 +35,8 @@ window.addEventListener('load', () => {
                     document.querySelector('.loader').style.display = 'none';
                     // Trigger entrance animations
                     startEntranceAnimations();
+                    // Ensure we're at the top one more time after loader is gone
+                    window.scrollTo(0, 0);
                 }
             });
         }
