@@ -334,6 +334,60 @@ createSnowflakes();
 
 // ===== Products Animations =====
 
+// Add horizontal scroll effect to products when scrolling vertically
+function setupProductsScrollEffect() {
+    const productsContainer = document.querySelector('.products-container');
+    if (!productsContainer) return;
+    
+    // Create a very subtle horizontal container shift
+    gsap.to('.products-container', {
+        scrollTrigger: {
+            trigger: '.cold-section',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1,
+        },
+        x: function() {
+            // Use a small offset on mobile, larger on desktop
+            return window.innerWidth < 768 ? -20 : -50;
+        }
+    });
+    
+    // Create staggered rollover effect for products
+    const productItems = gsap.utils.toArray('.product-item');
+    
+    productItems.forEach((item, i) => {
+        // Calculate row and column position for 3x2 grid
+        const row = Math.floor(i / 3);
+        const col = i % 3;
+        
+        // Items move horizontally in a sequence with a slight rotation
+        gsap.to(item, {
+            scrollTrigger: {
+                trigger: '.cold-section',
+                start: 'top 80%',
+                end: 'bottom 20%',
+                scrub: 1,
+            },
+            x: function() {
+                // More movement for items on the sides
+                const baseOffset = window.innerWidth < 768 ? 30 : 80;
+                return baseOffset * (col - 1); // -baseOffset, 0, or +baseOffset
+            },
+            rotation: function() {
+                // Slight rotation based on column position
+                return (col - 1) * 2; // -2°, 0°, or +2°
+            },
+            scale: function() {
+                // Middle column items slightly larger
+                return col === 1 ? 1.05 : 1;
+            },
+            ease: "power1.inOut",
+            delay: (row * 0.1) + (col * 0.05) // Staggered timing
+        });
+    });
+}
+
 // Make sure products are visible on page load
 document.addEventListener('DOMContentLoaded', function() {
     const productItems = document.querySelectorAll('.product-item');
@@ -341,22 +395,27 @@ document.addEventListener('DOMContentLoaded', function() {
     if (productItems.length) {
         // Force products to be visible
         productItems.forEach(item => {
-            item.style.opacity = '1';
+            item.style.opacity = '0';
             item.style.visibility = 'visible';
-            item.style.transform = 'none';
+            item.style.transform = 'translateX(-50px)';
         });
         
-        // Simple entrance animation
-        gsap.from(productItems, {
-            y: 30,
-            opacity: 0,
-            stagger: 0.1,
+        // Staggered left to right animation with slight bounce
+        gsap.to(productItems, {
+            x: 0,
+            opacity: 1,
+            stagger: { 
+                each: 0.1,
+                from: "start", 
+                grid: "auto",
+                ease: "power2.out"
+            },
             duration: 0.8,
-            ease: 'power2.out',
+            ease: "back.out(1.2)",
             scrollTrigger: {
                 trigger: '.products-header',
                 start: 'top 80%',
-                once: true
+                toggleActions: 'play none none none'
             }
         });
         
@@ -378,6 +437,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
+        
+        // Setup scroll-based animation
+        setupProductsScrollEffect();
     }
 });
 
