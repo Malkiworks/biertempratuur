@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <pattern id="ice-pattern" patternUnits="userSpaceOnUse" width="100" height="100">
+      <!-- Ice Cracks -->
+      <g stroke="#FFFFFF" stroke-opacity="0.7" fill="none">
+        <path d="M10,10 L30,30" stroke-width="0.8" />
+        <path d="M50,10 L30,30 L50,50" stroke-width="0.8" />
+        <path d="M70,20 L80,30 L90,10" stroke-width="0.8" />
+        <path d="M10,50 L20,60 L10,70" stroke-width="0.8" />
+        <path d="M40,70 L50,50 L70,70" stroke-width="0.8" />
+        <path d="M80,90 L70,70 L90,60" stroke-width="0.8" />
+        <path d="M20,90 L30,70 L50,90" stroke-width="0.8" />
+      </g>
+      
+      <!-- Ice Crystals -->
+      <g stroke="#FFFFFF" stroke-opacity="0.8" fill="none">
+        <path d="M20,20 L20,25 M17,23 L23,23" stroke-width="0.6" />
+        <path d="M60,15 L60,20 M57,18 L63,18" stroke-width="0.6" />
+        <path d="M85,35 L85,40 M82,38 L88,38" stroke-width="0.6" />
+        <path d="M30,45 L30,50 M27,48 L33,48" stroke-width="0.6" />
+        <path d="M75,55 L75,60 M72,58 L78,58" stroke-width="0.6" />
+        <path d="M40,80 L40,85 M37,83 L43,83" stroke-width="0.6" />
+        <path d="M90,85 L90,90 M87,88 L93,88" stroke-width="0.6" />
+      </g>
+      
+      <!-- Snowflakes -->
+      <g stroke="#FFFFFF" stroke-width="0.5" stroke-opacity="0.9" fill="none">
+        <path d="M20,40 L20,45 M17,43 L23,43 M18,41 L22,45 M18,45 L22,41" />
+        <path d="M60,70 L60,75 M57,73 L63,73 M58,71 L62,75 M58,75 L62,71" />
+        <path d="M80,20 L80,25 M77,23 L83,23 M78,21 L82,25 M78,25 L82,21" />
+      </g>
+    </pattern>
+  </defs>
+  
+  <!-- Apply Pattern to Cover the Entire Viewport -->
+  <rect width="100%" height="100%" fill="url(#ice-pattern)" />
+</svg> 

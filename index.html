@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BierTempratuur - Breek Jou Vriespunt</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- GSAP and ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Additional GSAP plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/EasePack.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader">
+        <div class="loader-content">
+            <img src="assets/logo/logo.jpg" alt="BierTempratuur Logo" class="loader-logo">
+            <div class="temperature-bar">
+                <div class="temperature-level"></div>
+            </div>
+            <p class="loader-text">Word Ys-Koud...</p>
+        </div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-trailer"></div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-logo">
+            <a href="#hot-section">
+                <img src="assets/logo/logo.jpg" alt="BierTempratuur Logo">
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="#hot-section" class="nav-link">Breek</a>
+            <a href="#transition-section" class="nav-link">Jou</a>
+            <a href="#cold-section" class="nav-link">Vriespunt</a>
+        </div>
+        <div class="nav-social">
+            <a href="https://www.instagram.com/bier_tempratuur/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+        </div>
+    </nav>
+
+    <!-- Main Content Sections -->
+    <main>
+        <section id="hot-section" class="section hot-section">
+            <div class="parallax-bg hot-bg"></div>
+            <div class="sun-animation">
+                <div class="sun-rays"></div>
+            </div>
+            <div class="clouds-container">
+                <div class="cloud cloud-1"></div>
+                <div class="cloud cloud-2"></div>
+                <div class="cloud cloud-3"></div>
+            </div>
+            <div class="content-container">
+                <h1 class="main-title">Breek Jou Vriespunt</h1>
+                <p class="subtitle">BierTempratuur™</p>
+                <div class="scroll-indicator">
+                    <span>Scroll Down</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </section>
+
+        <section id="transition-section" class="section transition-section">
+            <div class="parallax-bg transition-bg"></div>
+            <div class="melting-ice-container">
+                <div class="melting-ice"></div>
+                <div class="water-drops"></div>
+            </div>
+            <div class="beer-bottle-container">
+                <div class="beer-bottle">
+                    <div class="bottle-frost-overlay"></div>
+                </div>
+                <div class="frost-particles"></div>
+            </div>
+            <div class="content-container">
+                <h2 class="section-title">Bereik jou Vriespunt</h2>
+                <p class="section-description">Beleef ons Ys-Koue produkte wat jou laat bewe. </p>
+            </div>
+        </section>
+
+        <section id="cold-section" class="section cold-section">
+            <div class="parallax-bg cold-bg"></div>
+            <div class="snowflakes"></div>
+            <div class="ice-overlay"></div>
+            
+            <div class="content-container">
+                <div class="products-header">
+                    <h2 class="section-title">Ons Produkte</h2>
+                    <p class="section-description">Ys-Koud en 'n storie – beperkte uitgawes met unieke nommers</p>
+                </div>
+                
+                <div class="products-container">
+                    <!-- Product 1 -->
+                    <div class="product-item">
+                        <div class="product-image-container">
+                            <img src="products/cap.jpg" alt="Brown Cap" class="product-image">
+                            <div class="product-overlay">
+                                <span class="product-price">R 380.00</span>
+                                <span class="product-tag">Limited 50</span>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Oilskin Cap</h3>
+                            <p class="product-description">100% cotton oilskin cap. Chocolate color. One size fits most.</p>
+                            <div class="product-meta">
+                                <span class="product-feature"><i class="fas fa-check"></i> Certificate of Authenticity</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Unique numbering</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Handcrafted quality</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 2 -->
+                    <div class="product-item">
+                        <div class="product-image-container">
+                            <img src="products/cap.jpg" alt="White Beanie" class="product-image">
+                            <div class="product-overlay">
+                                <span class="product-price">R 220.00</span>
+                                <span class="product-tag">Limited 100 </span>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Winter Beanie</h3>
+                            <p class="product-description">Warm knitted beanie with embroidered logo. White color.</p>
+                            <div class="product-meta">
+                                <span class="product-feature"><i class="fas fa-check"></i> Certificate of Authenticity</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Unique numbering</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Premium materials</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 3 -->
+                    <div class="product-item">
+                        <div class="product-image-container">
+                            <img src="products/cap.jpg" alt="Bucket Hat" class="product-image">
+                            <div class="product-overlay">
+                                <span class="product-price">R 360.00</span>
+                                <span class="product-tag">Limited 69</span>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Bucket Hat</h3>
+                            <p class="product-description">100% Cotton bucket hat. Charcoal color. Size L/XL.</p>
+                            <div class="product-meta">
+                                <span class="product-feature"><i class="fas fa-check"></i> Certificate of Authenticity</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Unique numbering</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Weather resistant</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product 4 -->
+                    <div class="product-item">
+                        <div class="product-image-container">
+                            <img src="products/cap.jpg" alt="Special Edition Cap" class="product-image">
+                            <div class="product-overlay">
+                                <span class="product-price">R 420.00</span>
+                                <span class="product-tag">New</span>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Special Edition Cap</h3>
+                            <p class="product-description">Limited run special edition with custom frost effect embroidery.</p>
+                            <div class="product-meta">
+                                <span class="product-feature"><i class="fas fa-check"></i> Certificate of Authenticity</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Unique numbering</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Collector's item</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 5 -->
+                    <div class="product-item">
+                        <div class="product-image-container">
+                            <img src="products/cap.jpg" alt="Special Edition Cap" class="product-image">
+                            <div class="product-overlay">
+                                <span class="product-price">R 420.00</span>
+                                <span class="product-tag">New</span>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Special Edition Cap</h3>
+                            <p class="product-description">Limited run special edition with custom frost effect embroidery.</p>
+                            <div class="product-meta">
+                                <span class="product-feature"><i class="fas fa-check"></i> Certificate of Authenticity</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Unique numbering</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Collector's item</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 6 -->
+                    <div class="product-item">
+                        <div class="product-image-container">
+                            <img src="products/cap.jpg" alt="Special Edition Cap" class="product-image">
+                            <div class="product-overlay">
+                                <span class="product-price">R 69.00</span>
+                                <span class="product-tag">New</span>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Special Edition Cap</h3>
+                            <p class="product-description">Limited run special edition with custom frost effect embroidery.</p>
+                            <div class="product-meta">
+                                <span class="product-feature"><i class="fas fa-check"></i> Certificate of Authenticity</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Unique numbering</span>
+                                <span class="product-feature"><i class="fas fa-check"></i> Collector's item</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="cta-container">
+                    <h3 class="cta-title">Ready to Break Your Freezing Point?</h3>
+                    <a href="#" class="cta-button">Shop All Products</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-logo">
+            <img src="assets/logo/logo.jpg" alt="BierTempratuur Logo">
+        </div>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>About Us</h4>
+                <p>BierTempratuur is a premium lifestyle brand established in 2024, focused on authentic, limited-edition apparel.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Connect</h4>
+                <div class="footer-social">
+                    <a href="https://www.instagram.com/bier_tempratuur/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Contact</h4>
+                <p>Email: info@biertempratuur.co.za</p>
+                <p>Instagram: @bier_tempratuur</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 BierTempratuur. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html> 

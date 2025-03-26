@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="500" viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient Definitions -->
+  <defs>
+    <linearGradient id="beerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f9a602;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e67e00;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#f0f0f0;stop-opacity:0.8" />
+    </linearGradient>
+    <radialGradient id="rimShine" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </radialGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5" />
+      <feOffset dx="3" dy="3" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="innerGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
+      <feOffset dx="0" dy="0" />
+      <feComposite in="SourceGraphic" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Beer Jug Base with Glass Effect -->
+  <path d="M70 135 C70 90 120 60 150 60 C180 60 230 90 230 135 L230 370 C230 415 180 440 150 440 C120 440 70 415 70 370 Z" 
+        fill="url(#glassGradient)" filter="url(#dropShadow)"/>
+  
+  <!-- Jug Shadow -->
+  <path d="M70 135 C70 90 120 60 150 60 C180 60 230 90 230 135 L230 370 C230 415 180 440 150 440 C120 440 70 415 70 370 Z" 
+        fill="#888" opacity="0.1" transform="translate(5,5)"/>
+  
+  <!-- Jug Inner Shadow -->
+  <path d="M75 140 C75 95 122 65 150 65 C178 65 225 95 225 140 L225 365 C225 410 178 435 150 435 C122 435 75 410 75 365 Z" 
+        fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3" filter="url(#innerGlow)"/>
+  
+  <!-- Jug Handle with Better Shading -->
+  <path d="M230 170 C270 170 285 190 285 230 C285 270 270 290 230 290" 
+        fill="none" stroke="url(#glassGradient)" stroke-width="20" stroke-linecap="round"/>
+  
+  <!-- Handle Highlight -->
+  <path d="M230 170 C270 170 285 190 285 230 C285 270 270 290 230 290" 
+        fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-opacity="0.2"/>
+  
+  <!-- Jug Rim with Highlight -->
+  <ellipse cx="150" cy="135" rx="80" ry="25" fill="url(#glassGradient)"/>
+  <ellipse cx="150" cy="135" rx="76" ry="22" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.4"/>
+  
+  <!-- Top Opening with Depth -->
+  <ellipse cx="150" cy="135" rx="50" ry="15" fill="#333333" fill-opacity="0.15"/>
+  <ellipse cx="150" cy="135" rx="48" ry="13" fill="#222222" fill-opacity="0.1"/>
+  
+  <!-- Beer Liquid with Gradient -->
+  <path d="M80 180 C80 180 120 190 150 190 C180 190 220 180 220 180 L220 360 C220 400 180 425 150 425 C120 425 80 400 80 360 Z" 
+        fill="url(#beerGradient)"/>
+  
+  <!-- Beer Liquid Shine -->
+  <path d="M85 210 L85 350 C85 385 120 410 150 410 C180 410 215 385 215 350 L215 210"
+        fill="none" stroke="#ffffff" stroke-width="3" stroke-opacity="0.1"/>
+  
+  <!-- Beer Foam with More Details -->
+  <path d="M80 180 C80 180 120 190 150 190 C180 190 220 180 220 180 L220 210 C220 210 200 225 180 220 C160 215 140 225 120 220 C100 215 80 210 80 210 Z" 
+        fill="#ffffff" fill-opacity="0.95"/>
+  
+  <!-- Foam Details - More Bubbles -->
+  <circle cx="100" cy="195" r="5" fill="#ffffff" opacity="0.9"/>
+  <circle cx="115" cy="200" r="4" fill="#ffffff" opacity="0.85"/>
+  <circle cx="130" cy="195" r="6" fill="#ffffff" opacity="0.9"/>
+  <circle cx="145" cy="200" r="5" fill="#ffffff" opacity="0.85"/>
+  <circle cx="160" cy="195" r="4" fill="#ffffff" opacity="0.9"/>
+  <circle cx="175" cy="200" r="6" fill="#ffffff" opacity="0.85"/>
+  <circle cx="190" cy="195" r="5" fill="#ffffff" opacity="0.9"/>
+  <circle cx="205" cy="197" r="4" fill="#ffffff" opacity="0.85"/>
+  <circle cx="95" cy="203" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="110" cy="193" r="2" fill="#ffffff" opacity="0.7"/>
+  <circle cx="125" cy="205" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="140" cy="193" r="2" fill="#ffffff" opacity="0.7"/>
+  <circle cx="155" cy="205" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="170" cy="193" r="2" fill="#ffffff" opacity="0.7"/>
+  <circle cx="185" cy="205" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="200" cy="193" r="2" fill="#ffffff" opacity="0.7"/>
+  
+  <!-- Jug Details - Glass Seams -->
+  <path d="M110 100 L110 135" stroke="#e6e6e6" stroke-width="1" opacity="0.6"/>
+  <path d="M190 100 L190 135" stroke="#e6e6e6" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Jug Label with Gradient Background -->
+  <rect x="100" y="240" width="100" height="120" rx="10" ry="10" fill="#0c0c0c" opacity="0.95"/>
+  <rect x="102" y="242" width="96" height="116" rx="8" ry="8" fill="#111111" opacity="0.9"/>
+  
+  <!-- Label Border with Gold Effect -->
+  <rect x="105" y="245" width="90" height="110" rx="8" ry="8" fill="none" stroke="#f0a500" stroke-width="2"/>
+  <rect x="107" y="247" width="86" height="106" rx="6" ry="6" fill="none" stroke="#f7c04a" stroke-width="1"/>
+  
+  <!-- BIER Text with Better Typography -->
+  <text x="150" y="290" font-family="'Arial Black', sans-serif" font-size="24" font-weight="bold" fill="#f0a500" text-anchor="middle" filter="url(#dropShadow)">BIER</text>
+  
+  <!-- TEMPRATUUR Text with Better Typography -->
+  <text x="150" y="320" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#f7c04a" text-anchor="middle">TEMPRATUUR</text>
+  
+  <!-- Jug Highlights - More Realistic -->
+  <path d="M85 150 C85 120 115 100 150 100 C160 100 170 102 180 105" 
+        fill="none" stroke="#ffffff" stroke-width="2" opacity="0.8"/>
+  
+  <ellipse cx="200" cy="230" rx="10" ry="40" fill="#ffffff" opacity="0.2"/>
+  <ellipse cx="100" cy="230" rx="10" ry="40" fill="#ffffff" opacity="0.2"/>
+  
+  <!-- Ice Cold Symbols with Better Styling -->
+  <g fill="#f7c04a">
+    <path d="M150 350 L157 365 L143 365 Z" />
+    <path d="M150 367 L157 382 L143 382 Z" />
+    <path d="M150 384 L157 399 L143 399 Z" />
+  </g>
+  
+  <!-- Bubbles in Beer -->
+  <g fill="#ffffff" opacity="0.8">
+    <circle cx="110" cy="300" r="2" />
+    <circle cx="115" cy="320" r="1.5" />
+    <circle cx="120" cy="270" r="1" />
+    <circle cx="190" cy="310" r="2" />
+    <circle cx="185" cy="280" r="1.5" />
+    <circle cx="180" cy="330" r="1" />
+    <circle cx="150" cy="290" r="1.5" />
+    <circle cx="160" cy="330" r="1" />
+    <circle cx="140" cy="310" r="2" />
+  </g>
+  
+  <!-- Condensation Drops -->
+  <g fill="#ffffff" opacity="0.7">
+    <ellipse cx="85" cy="200" rx="2" ry="3" />
+    <ellipse cx="90" cy="250" rx="1.5" ry="3" />
+    <ellipse cx="85" cy="300" rx="2" ry="4" />
+    <ellipse cx="90" cy="350" rx="1.5" ry="3" />
+    <ellipse cx="215" cy="200" rx="2" ry="3" />
+    <ellipse cx="210" cy="250" rx="1.5" ry="3" />
+    <ellipse cx="215" cy="300" rx="2" ry="4" />
+    <ellipse cx="210" cy="350" rx="1.5" ry="3" />
+  </g>
+</svg> 
