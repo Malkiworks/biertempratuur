@@ -337,24 +337,25 @@ createSnowflakes();
 // Add horizontal scroll effect to products when scrolling vertically
 function setupProductsScrollEffect() {
     const productsContainer = document.querySelector('.products-container');
-    if (!productsContainer) return;
+    if (!productsContainer) return null;
     
     // Create a very subtle horizontal container shift
-    gsap.to('.products-container', {
-        scrollTrigger: {
-            trigger: '.cold-section',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1,
-        },
-        x: function() {
-            // Use a small offset on mobile, larger on desktop
-            return window.innerWidth < 768 ? -20 : -50;
-        }
+    const containerScrollTrigger = ScrollTrigger.create({
+        trigger: '.cold-section',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1,
+        animation: gsap.to('.products-container', {
+            x: function() {
+                // Use a small offset on mobile, larger on desktop
+                return window.innerWidth < 768 ? -20 : -50;
+            }
+        })
     });
     
     // Create staggered rollover effect for products
     const productItems = gsap.utils.toArray('.product-item');
+    const productTriggers = [];
     
     productItems.forEach((item, i) => {
         // Calculate row and column position for 3x2 grid
@@ -362,30 +363,210 @@ function setupProductsScrollEffect() {
         const col = i % 3;
         
         // Items move horizontally in a sequence with a slight rotation
-        gsap.to(item, {
-            scrollTrigger: {
-                trigger: '.cold-section',
-                start: 'top 80%',
-                end: 'bottom 20%',
-                scrub: 1,
-            },
-            x: function() {
-                // More movement for items on the sides
-                const baseOffset = window.innerWidth < 768 ? 30 : 80;
-                return baseOffset * (col - 1); // -baseOffset, 0, or +baseOffset
-            },
-            rotation: function() {
-                // Slight rotation based on column position
-                return (col - 1) * 2; // -2°, 0°, or +2°
-            },
-            scale: function() {
-                // Middle column items slightly larger
-                return col === 1 ? 1.05 : 1;
-            },
-            ease: "power1.inOut",
-            delay: (row * 0.1) + (col * 0.05) // Staggered timing
+        const itemTrigger = ScrollTrigger.create({
+            trigger: '.cold-section',
+            start: 'top 80%',
+            end: 'bottom 20%',
+            scrub: 1,
+            animation: gsap.to(item, {
+                x: function() {
+                    // More movement for items on the sides
+                    const baseOffset = window.innerWidth < 768 ? 30 : 80;
+                    return baseOffset * (col - 1); // -baseOffset, 0, or +baseOffset
+                },
+                rotation: function() {
+                    // Slight rotation based on column position
+                    return (col - 1) * 2; // -2°, 0°, or +2°
+                },
+                scale: function() {
+                    // Middle column items slightly larger
+                    return col === 1 ? 1.05 : 1;
+                },
+                ease: "power1.inOut",
+                delay: (row * 0.1) + (col * 0.05) // Staggered timing
+            })
+        });
+        
+        productTriggers.push(itemTrigger);
+    });
+    
+    // Return an object with methods to kill all triggers
+    return {
+        kill: function() {
+            if (containerScrollTrigger) containerScrollTrigger.kill();
+            productTriggers.forEach(trigger => {
+                if (trigger) trigger.kill();
+            });
+        }
+    };
+}
+
+// Setup continuous product carousel effect
+function setupProductCarousel() {
+    const productsContainer = document.querySelector('.products-container');
+    if (!productsContainer) return null;
+    
+    const productItems = gsap.utils.toArray('.product-item');
+    if (productItems.length === 0) return null;
+    
+    // Clear existing grid layout to allow for absolute positioning
+    gsap.set(productsContainer, {
+        display: 'block',
+        position: 'relative',
+        height: '450px',
+        margin: '0 auto',
+        overflow: 'hidden'
+    });
+    
+    // Set all products to absolute position for the carousel
+    productItems.forEach((item, i) => {
+        gsap.set(item, {
+            position: 'absolute',
+            top: 0,
+            left: '50%',
+            xPercent: -50,
+            x: i === 0 ? 0 : -150, // Start position
+            opacity: i === 0 ? 1 : 0,
+            scale: i === 0 ? 1 : 0.8,
+            width: '80%',
+            maxWidth: '300px',
+            margin: '0 auto',
+            zIndex: i === 0 ? 10 : 1
         });
     });
+    
+    // Create the looping sequence
+    const createProductLoop = () => {
+        const tl = gsap.timeline({
+            repeat: -1, // Infinite repeat
+            onRepeat: () => {
+                // Move the first item to the end to create seamless loop
+                const firstProduct = productItems[0];
+                productItems.push(productItems.shift());
+                // Reset the moved product
+                gsap.set(firstProduct, { 
+                    x: -150, 
+                    opacity: 0, 
+                    scale: 0.8,
+                    zIndex: 1 
+                });
+            }
+        });
+        
+        // Animation for each product
+        productItems.forEach((item, i) => {
+            // Stagger the start time for each product
+            const staggerDelay = i * 4; // 4 seconds between each product start
+            
+            // Enter from left
+            tl.to(item, {
+                x: 0,
+                opacity: 1,
+                scale: 1,
+                zIndex: 10,
+                duration: 1,
+                ease: "back.out(1.2)",
+            }, staggerDelay);
+            
+            // Stay visible
+            tl.to(item, {
+                x: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 2
+            }, staggerDelay + 1);
+            
+            // Exit to right
+            tl.to(item, {
+                x: 150,
+                opacity: 0,
+                scale: 0.8,
+                zIndex: 1,
+                duration: 1,
+                ease: "power1.in"
+            }, staggerDelay + 3);
+        });
+        
+        return tl;
+    };
+    
+    let productLoop;
+    let scrollTriggerInstance;
+    let progressContainer;
+    
+    // Start the animation on mobile only
+    if (window.innerWidth <= 768) {
+        // Create a progress indicator
+        progressContainer = document.createElement('div');
+        progressContainer.className = 'carousel-progress';
+        Object.assign(progressContainer.style, {
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+            margin: '20px auto',
+            position: 'relative',
+            zIndex: 20
+        });
+        
+        // Add dots for each product
+        productItems.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'carousel-dot';
+            Object.assign(dot.style, {
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: i === 0 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)',
+                transition: 'background-color 0.3s ease'
+            });
+            progressContainer.appendChild(dot);
+        });
+        
+        // Insert the progress container after the products container
+        productsContainer.parentNode.insertBefore(progressContainer, productsContainer.nextSibling);
+        
+        const dots = document.querySelectorAll('.carousel-dot');
+        let activeIndex = 0;
+        
+        // Start the product loop
+        productLoop = createProductLoop();
+        
+        // Update the active dot indicator
+        productLoop.eventCallback('onUpdate', () => {
+            // Calculate which product is currently active based on the timeline progress
+            const totalTime = productLoop.totalDuration();
+            const cycleTime = totalTime / productItems.length;
+            const progress = productLoop.time() % totalTime;
+            const newActiveIndex = Math.floor((progress % totalTime) / cycleTime);
+            
+            if (newActiveIndex !== activeIndex) {
+                // Update dots
+                dots.forEach((dot, i) => {
+                    dot.style.backgroundColor = i === newActiveIndex ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.5)';
+                });
+                activeIndex = newActiveIndex;
+            }
+        });
+        
+        // Create ScrollTrigger to control the animation
+        scrollTriggerInstance = ScrollTrigger.create({
+            trigger: '.cold-section',
+            start: 'top 80%',
+            end: 'bottom 20%',
+            onEnter: () => productLoop.play(),
+            onLeave: () => productLoop.pause(),
+            onEnterBack: () => productLoop.play(),
+            onLeaveBack: () => productLoop.pause()
+        });
+    }
+    
+    // Return an object with a kill method to clean up
+    return {
+        kill: function() {
+            if (productLoop) productLoop.kill();
+            if (scrollTriggerInstance) scrollTriggerInstance.kill();
+        }
+    };
 }
 
 // Make sure products are visible on page load
@@ -393,53 +574,131 @@ document.addEventListener('DOMContentLoaded', function() {
     const productItems = document.querySelectorAll('.product-item');
     
     if (productItems.length) {
-        // Force products to be visible
-        productItems.forEach(item => {
-            item.style.opacity = '0';
-            item.style.visibility = 'visible';
-            item.style.transform = 'translateX(-50px)';
-        });
+        let productScrollEffect;
+        let productCarousel;
         
-        // Staggered left to right animation with slight bounce
-        gsap.to(productItems, {
-            x: 0,
-            opacity: 1,
-            stagger: { 
-                each: 0.1,
-                from: "start", 
-                grid: "auto",
-                ease: "power2.out"
-            },
-            duration: 0.8,
-            ease: "back.out(1.2)",
-            scrollTrigger: {
-                trigger: '.products-header',
-                start: 'top 80%',
-                toggleActions: 'play none none none'
+        // Setup initial animations based on viewport width
+        function initProductAnimations() {
+            // Clear existing animations if they exist
+            if (productScrollEffect) {
+                productScrollEffect.kill();
+                productScrollEffect = null;
             }
+            
+            if (productCarousel) {
+                // Remove carousel progress indicators
+                const progressContainer = document.querySelector('.carousel-progress');
+                if (progressContainer) {
+                    progressContainer.remove();
+                }
+                
+                // Reset product container and items
+                const productsContainer = document.querySelector('.products-container');
+                gsap.set(productsContainer, {
+                    display: '',
+                    position: '',
+                    height: '',
+                    margin: '',
+                    overflow: ''
+                });
+                
+                // Reset product items
+                productItems.forEach(item => {
+                    gsap.set(item, {
+                        position: '',
+                        top: '',
+                        left: '',
+                        xPercent: 0,
+                        x: 0,
+                        opacity: 1,
+                        scale: 1,
+                        width: '',
+                        maxWidth: '',
+                        margin: '',
+                        zIndex: ''
+                    });
+                });
+                
+                productCarousel.kill();
+                productCarousel = null;
+            }
+            
+            // Initialize appropriate animation based on viewport width
+            if (window.innerWidth > 768) {
+                // On desktop, use scroll effect animation
+                productItems.forEach(item => {
+                    item.style.opacity = '0';
+                    item.style.visibility = 'visible';
+                    item.style.transform = 'translateX(-50px)';
+                });
+                
+                // Staggered left to right animation with slight bounce
+                gsap.to(productItems, {
+                    x: 0,
+                    opacity: 1,
+                    stagger: { 
+                        each: 0.1,
+                        from: "start", 
+                        grid: "auto",
+                        ease: "power2.out"
+                    },
+                    duration: 0.8,
+                    ease: "back.out(1.2)",
+                    scrollTrigger: {
+                        trigger: '.products-header',
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    }
+                });
+                
+                // Setup scroll-based animation
+                productScrollEffect = setupProductsScrollEffect();
+            } else {
+                // On mobile, use the carousel animation
+                productItems.forEach(item => {
+                    item.style.visibility = 'visible';
+                });
+                
+                // Setup the carousel effect
+                productCarousel = setupProductCarousel();
+            }
+        }
+        
+        // Initialize animations
+        initProductAnimations();
+        
+        // Handle window resize events
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            // Debounce resize events
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                initProductAnimations();
+            }, 250);
         });
         
-        // Add hover effects
+        // Add hover effects (for desktop)
         productItems.forEach(item => {
             item.addEventListener('mouseenter', () => {
-                gsap.to(item, {
-                    y: -10,
-                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 15px 30px rgba(100, 200, 255, 0.3)',
-                    duration: 0.3
-                });
+                if (window.innerWidth > 768) {
+                    gsap.to(item, {
+                        y: -10,
+                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 15px 30px rgba(100, 200, 255, 0.3)',
+                        duration: 0.3
+                    });
+                }
             });
             
             item.addEventListener('mouseleave', () => {
-                gsap.to(item, {
-                    y: 0,
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-                    duration: 0.3
-                });
+                if (window.innerWidth > 768) {
+                    gsap.to(item, {
+                        y: 0,
+                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+                        duration: 0.3
+                    });
+                }
             });
         });
-        
-        // Setup scroll-based animation
-        setupProductsScrollEffect();
     }
 });
 
