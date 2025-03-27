@@ -660,6 +660,7 @@ button:hover ~ .cursor-trailer,
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     touch-action: pan-x; /* Only allow horizontal panning */
     will-change: scroll-position; /* Performance optimization */
+    -webkit-transform: translateZ(0); /* Helps with iOS rendering */
 }
 
 /* Style for cloned items (infinite scroll) */
@@ -673,22 +674,26 @@ button:hover ~ .cursor-trailer,
 
 /* Style for each product item */
 .product-item {
-    flex: 0 0 300px;
+    flex: 0 0 calc(85% - 25px); /* Percentage-based width for better responsiveness */
+    max-width: 300px; /* Max width to prevent overly large items */
     background-color: rgba(255, 255, 255, 0.15); /* More transparent */
     backdrop-filter: blur(12px); /* Increased blur */
+    -webkit-backdrop-filter: blur(12px); /* Safari support */
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smoother transition */
-    min-height: 480px;
+    min-height: 450px; /* Reduced default height */
     position: relative;
     will-change: transform; /* Optimize performance */
     transform: translateZ(0); /* Force hardware acceleration */
+    -webkit-transform: translateZ(0); /* For Safari */
     border: none; /* Removed border */
 }
 
 .product-item:hover {
     transform: translateY(-8px) scale(1.02) translateZ(0);
+    -webkit-transform: translateY(-8px) scale(1.02) translateZ(0); /* For Safari */
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
     border: none; /* No border on hover either */
 }
@@ -715,11 +720,13 @@ button:hover ~ .cursor-trailer,
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bounce effect */
     font-size: 18px; /* Larger icon */
+    -webkit-appearance: none; /* Fix Safari button appearance */
 }
 
 .carousel-control:hover {
     background: rgba(0, 0, 0, 0.6);
     transform: scale(1.1);
+    -webkit-transform: scale(1.1); /* For Safari */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -727,21 +734,27 @@ button:hover ~ .cursor-trailer,
 .product-image-container {
     position: relative;
     width: 100%;
-    height: 250px; /* Increased height */
+    height: 0;
+    padding-bottom: 75%; /* Aspect ratio based height */
     overflow: hidden;
     border-radius: 12px 12px 0 0; /* Rounded top corners */
 }
 
 .product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smoother transition */
     filter: brightness(0.95); /* Slightly dimmed for better contrast */
+    -webkit-transform: translateZ(0); /* Safari hardware acceleration */
 }
 
 .product-item:hover .product-image {
     transform: scale(1.08);
+    -webkit-transform: scale(1.08); /* For Safari */
     filter: brightness(1.05); /* Brighten on hover */
 }
 
@@ -773,6 +786,7 @@ button:hover ~ .cursor-trailer,
 
 .product-item:hover .product-price {
     transform: translateY(-3px);
+    -webkit-transform: translateY(-3px); /* For Safari */
     background: rgba(0, 0, 0, 0.8);
 }
 
@@ -792,6 +806,7 @@ button:hover ~ .cursor-trailer,
 
 .product-item:hover .product-tag {
     transform: translateY(-3px);
+    -webkit-transform: translateY(-3px); /* For Safari */
 }
 
 .product-info {
@@ -801,7 +816,8 @@ button:hover ~ .cursor-trailer,
     gap: 10px;
     color: var(--text-light);
     height: auto;
-    overflow: hidden;
+    flex: 1;
+    min-height: 200px; /* Ensure enough height for content */
 }
 
 .product-title {
@@ -810,10 +826,14 @@ button:hover ~ .cursor-trailer,
     color: var(--text-light);
     font-weight: 600;
     transition: transform 0.3s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .product-item:hover .product-title {
     transform: translateY(-2px);
+    -webkit-transform: translateY(-2px); /* For Safari */
 }
 
 .product-description {
@@ -821,12 +841,12 @@ button:hover ~ .cursor-trailer,
     margin-bottom: 15px;
     font-size: 0.95em;
     line-height: 1.5;
-    max-height: 4.5em; /* Limit to 3 lines */
-    overflow: hidden;
-    text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: none; /* Remove fixed height, rely on line clamp */
 }
 
 .product-meta {
@@ -852,11 +872,13 @@ button:hover ~ .cursor-trailer,
 .product-feature i {
     color: var(--accent-color);
     font-size: 0.9em;
+    flex-shrink: 0; /* Prevent icon from shrinking */
     transition: transform 0.3s ease;
 }
 
 .product-item:hover .product-feature i {
     transform: scale(1.2);
+    -webkit-transform: scale(1.2); /* For Safari */
 }
 
 /* Product actions */
@@ -878,33 +900,35 @@ button:hover ~ .cursor-trailer,
     transition: all 0.3s ease;
     font-weight: bold;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    -webkit-appearance: none; /* Fix Safari button appearance */
 }
 
 .product-actions button:hover {
     transform: translateY(-2px);
+    -webkit-transform: translateY(-2px); /* For Safari */
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Mobile optimization */
 @media (max-width: 768px) {
     .products-container {
-        padding: 20px 0;
+        padding: 20px 15px; /* Added horizontal padding */
         gap: 15px;
     }
     
     .product-item {
-        flex: 0 0 260px;
-        min-height: 450px;
+        flex: 0 0 calc(80% - 15px); /* Percentage-based for different screen sizes */
+        max-width: 280px;
+        min-height: 420px;
     }
     
     .product-image-container {
-        height: 200px;
+        padding-bottom: 70%; /* Aspect ratio based */
     }
     
     .product-description {
         font-size: 0.85em;
         -webkit-line-clamp: 2;
-        max-height: 3em;
     }
     
     .product-meta {
@@ -915,35 +939,32 @@ button:hover ~ .cursor-trailer,
         font-size: 0.8em;
     }
     
-    .scroll-gradient-left,
-    .scroll-gradient-right {
-        width: 50px;
-    }
-    
     body.touching {
         overflow: hidden;
     }
     
     .product-item:active {
         transform: translateY(-3px) scale(1.01);
+        -webkit-transform: translateY(-3px) scale(1.01); /* For Safari */
     }
 }
 
 @media (max-width: 480px) {
     .products-container {
-        padding: 15px 0;
+        padding: 15px 10px; /* Added some padding */
         gap: 12px;
     }
     
     .product-item {
-        flex: 0 0 220px;
-        min-height: 400px; /* Reduced height for better mobile fit */
+        flex: 0 0 calc(75% - 12px); /* Percentage-based for different screen sizes */
+        max-width: 240px;
+        min-height: 380px; /* Reduced height for better mobile fit */
         display: flex;
         flex-direction: column;
     }
     
     .product-image-container {
-        height: 160px;
+        padding-bottom: 65%; /* Aspect ratio based */
     }
     
     .product-info {
@@ -951,6 +972,7 @@ button:hover ~ .cursor-trailer,
         flex: 1;
         display: flex;
         flex-direction: column;
+        min-height: 180px;
     }
     
     .product-title {
@@ -962,7 +984,6 @@ button:hover ~ .cursor-trailer,
         font-size: 0.8em;
         margin-bottom: 10px;
         -webkit-line-clamp: 2;
-        max-height: 2.4em;
     }
     
     .product-feature {
@@ -972,6 +993,37 @@ button:hover ~ .cursor-trailer,
     .carousel-control {
         width: 40px;
         height: 40px;
+    }
+}
+
+/* Safari-specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .product-item {
+        /* Safari-specific styles */
+        transform: translate3d(0, 0, 0); /* Force hardware acceleration in Safari */
+    }
+    
+    .products-container {
+        -webkit-overflow-scrolling: touch; /* Better touch scrolling in Safari */
+    }
+    
+    .product-image-container {
+        z-index: 0; /* Fix Safari z-index issues */
+    }
+    
+    /* Fix for Safari text truncation */
+    .product-description {
+        /* Ensuring Safari respects line-clamp */
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+    }
+    
+    @media (max-width: 480px) {
+        .product-description {
+            -webkit-line-clamp: 2;
+        }
     }
 }
 

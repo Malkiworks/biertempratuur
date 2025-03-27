@@ -374,6 +374,10 @@ function setupProductCarousel() {
     // Do not create a wrapper - work directly with the container
     let wrapper = container.parentElement;
     
+    // Detect iOS Safari
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
     // Set up cloned items for infinite scroll if not already done
     setupInfiniteScroll(container);
     
@@ -385,7 +389,7 @@ function setupProductCarousel() {
     let autoScrolling = true;
     let resetInProgress = false;
     let lastInteractionTime = 0;
-    let scrollSpeed = 2; // Faster animation speed
+    let scrollSpeed = isiOS ? 1 : 2; // Slower for iOS to prevent issues
     let manualScrolling = false;
     let touchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     
@@ -579,22 +583,68 @@ function setupProductCarousel() {
     function startAutoScroll() {
         if (autoScrollInterval) return;
         
-        autoScrollInterval = setInterval(() => {
-            if (!container || isDragging || resetInProgress || manualScrolling) return;
+        // Safari on iOS has animation issues, so we need to use a different approach
+        if (isiOS) {
+            // For iOS Safari, use requestAnimationFrame for smoother performance
+            let lastTimestamp = null;
+            let animationId = null;
             
-            container.scrollLeft += scrollSpeed;
-            checkInfiniteScrollBoundaries();
-        }, 16); // ~60fps for smoother animation
+            const scrollAnimation = (timestamp) => {
+                if (!container || isDragging || resetInProgress || manualScrolling) {
+                    lastTimestamp = null;
+                    animationId = requestAnimationFrame(scrollAnimation);
+                    return;
+                }
+                
+                if (!lastTimestamp) {
+                    lastTimestamp = timestamp;
+                }
+                
+                // Only update every few frames for iOS to prevent jank
+                const elapsed = timestamp - lastTimestamp;
+                if (elapsed > 32) { // Approximately 30fps for iOS
+                    container.scrollLeft += scrollSpeed;
+                    checkInfiniteScrollBoundaries();
+                    lastTimestamp = timestamp;
+                }
+                
+                animationId = requestAnimationFrame(scrollAnimation);
+            };
+            
+            animationId = requestAnimationFrame(scrollAnimation);
+            
+            // Store the animation ID for cleanup
+            autoScrollInterval = {
+                cancel: () => {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                }
+            };
+        } else {
+            // For other browsers, use the standard interval approach
+            autoScrollInterval = setInterval(() => {
+                if (!container || isDragging || resetInProgress || manualScrolling) return;
+                
+                container.scrollLeft += scrollSpeed;
+                checkInfiniteScrollBoundaries();
+            }, 16); // ~60fps for smoother animation
+        }
     }
     
     function stopAutoScroll() {
         if (autoScrollInterval) {
-            clearInterval(autoScrollInterval);
+            if (isiOS && autoScrollInterval.cancel) {
+                autoScrollInterval.cancel();
+            } else if (!isiOS) {
+                clearInterval(autoScrollInterval);
+            }
             autoScrollInterval = null;
         }
     }
     
-    // Setup animation for product items - use touchstart/click events for mobile compatibility
+    // Setup product item animations with Safari fixes
     function setupProductItemAnimations() {
         const productItems = container.querySelectorAll('.product-item');
         
@@ -611,7 +661,8 @@ function setupProductCarousel() {
                             scale: 1.03,
                             boxShadow: '0 15px 30px rgba(0, 0, 0, 0.25)',
                             duration: 0.3,
-                            ease: 'power2.out'
+                            ease: 'power2.out',
+                            force3D: true // Force 3D transforms for better performance
                         });
                         
                         // Also animate the image
@@ -620,7 +671,8 @@ function setupProductCarousel() {
                             gsap.to(image, {
                                 scale: 1.08,
                                 duration: 0.5,
-                                ease: 'power1.out'
+                                ease: 'power1.out',
+                                force3D: true // Force 3D transforms for better performance
                             });
                         }
                     }
@@ -632,7 +684,8 @@ function setupProductCarousel() {
                         scale: 1,
                         boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
                         duration: 0.4,
-                        ease: 'power2.out'
+                        ease: 'power2.out',
+                        force3D: true // Force 3D transforms for better performance
                     });
                     
                     // Reset image animation
@@ -641,7 +694,8 @@ function setupProductCarousel() {
                         gsap.to(image, {
                             scale: 1,
                             duration: 0.5,
-                            ease: 'power1.out'
+                            ease: 'power1.out',
+                            force3D: true // Force 3D transforms for better performance
                         });
                     }
                 });
@@ -655,7 +709,8 @@ function setupProductCarousel() {
                         scale: 1.02,
                         boxShadow: '0 10px 20px rgba(0, 0, 0, 0.25)',
                         duration: 0.2,
-                        ease: 'power2.out'
+                        ease: 'power2.out',
+                        force3D: true // Force 3D transforms for better performance
                     });
                 });
                 
@@ -665,7 +720,8 @@ function setupProductCarousel() {
                         scale: 1,
                         boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
                         duration: 0.3,
-                        ease: 'power2.out'
+                        ease: 'power2.out',
+                        force3D: true // Force 3D transforms for better performance
                     });
                 });
             }
