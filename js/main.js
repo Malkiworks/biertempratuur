@@ -861,6 +861,75 @@ function initProductAnimations() {
     const productItems = document.querySelectorAll('.product-item');
     const productsContainer = document.querySelector('.products-container');
     
+    // Check if on mobile device - if so, don't initialize carousel
+    if (window.innerWidth <= 768) {
+        // Clear existing animations if they exist
+        if (window.productScrollEffect) {
+            window.productScrollEffect.kill();
+            window.productScrollEffect = null;
+        }
+        
+        if (window.productCarousel) {
+            window.productCarousel.kill();
+            window.productCarousel = null;
+        }
+        
+        // Remove any existing carousel elements
+        const existingWrapper = document.querySelector('.products-wrapper');
+        if (existingWrapper) {
+            const container = existingWrapper.querySelector('.products-container');
+            if (container) {
+                // Remove cloned items to ensure a clean slate
+                const clonedItems = container.querySelectorAll('.cloned-item');
+                clonedItems.forEach(item => item.remove());
+                
+                // Move the container out of the wrapper
+                existingWrapper.parentNode.insertBefore(container, existingWrapper);
+                existingWrapper.remove();
+            }
+        }
+        
+        // Remove carousel controls
+        const existingControls = document.querySelector('.carousel-controls');
+        if (existingControls) {
+            existingControls.remove();
+        }
+        
+        // Remove all cloned items
+        const clonedItems = document.querySelectorAll('.cloned-item');
+        clonedItems.forEach(item => item.remove());
+        
+        // Reset all animations and styles for mobile grid layout
+        if (productsContainer) {
+            productsContainer.style.transform = 'none';
+            productsContainer.style.transition = 'none';
+            productsContainer.style.animation = 'none';
+            productsContainer.classList.remove('ios-scrolling');
+            productsContainer.style.overflow = 'visible';
+            productsContainer.style.scrollBehavior = 'auto';
+            productsContainer.dataset.infiniteScrollReady = 'false';
+        }
+        
+        // Reset all product items to default styles
+        if (productItems.length) {
+            productItems.forEach(item => {
+                item.style.transform = 'none';
+                item.style.transition = 'none';
+                item.style.animation = 'none';
+                
+                const image = item.querySelector('.product-image');
+                if (image) {
+                    image.style.transform = 'none';
+                    image.style.transition = 'none';
+                    image.style.animation = 'none';
+                }
+            });
+        }
+        
+        return; // Exit early - don't initialize carousel on mobile
+    }
+    
+    // Continue with desktop animations
     // Clear existing animations if they exist
     if (window.productScrollEffect) {
         window.productScrollEffect.kill();
