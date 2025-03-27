@@ -940,51 +940,85 @@ button:hover ~ .cursor-trailer,
 /* Mobile optimization */
 @media (max-width: 768px) {
     .products-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        overflow: visible;
-        padding: 15px;
-        margin: 20px auto;
-        width: 90%;
-        max-width: none;
-        scroll-behavior: auto;
-        overflow-x: visible;
+        display: flex !important;
+        grid-template-columns: unset !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding: 40px 20% !important;
+        margin: 40px auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        gap: 10px !important;
+        scroll-behavior: smooth;
+        position: relative;
+        transform: translateZ(0);
+        will-change: transform;
+    }
+    
+    .products-container::-webkit-scrollbar {
+        display: none;
     }
     
     .product-item {
-        flex: none;
-        width: 100%;
-        max-width: none;
-        min-height: 420px;
-        margin: 0;
-        transform: none !important;
-        animation: none !important;
-        transition: none !important;
-    }
-    
-    .product-image-container {
-        height: 0;
-        padding-bottom: 75%;
+        flex: 0 0 80% !important;
+        width: 80% !important;
+        max-width: none !important;
+        min-height: 420px !important;
+        margin: 0 !important;
+        transition: transform 0.3s ease !important;
+        transform-origin: center center;
+        opacity: 0.8;
+        scroll-snap-align: center;
         position: relative;
+        transform: scale(0.85);
+        z-index: 1;
     }
     
-    .product-image {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transform: none !important;
-        animation: none !important;
-        transition: none !important;
+    .product-item.active {
+        transform: scale(1);
+        opacity: 1;
+        z-index: 2;
     }
     
-    /* Hide all animation-related elements */
-    .carousel-controls,
-    .cloned-item {
-        display: none !important;
+    /* Show controls for mobile */
+    .carousel-controls {
+        display: flex !important;
+        margin-top: 20px;
+    }
+    
+    /* Improved touch area for buttons */
+    .carousel-control {
+        width: 60px;
+        height: 60px;
+    }
+    
+    /* Animation for auto-sliding */
+    @keyframes slide {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(calc(-100% / 3));
+        }
+    }
+    
+    /* Optimizations for Safari */
+    @supports (-webkit-touch-callout: none) {
+        .products-container {
+            -webkit-transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .product-item {
+            -webkit-transform: scale(0.85);
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .product-item.active {
+            -webkit-transform: scale(1);
+        }
     }
     
     /* Ensure CTA has good spacing */
@@ -994,22 +1028,14 @@ button:hover ~ .cursor-trailer,
     }
 }
 
+/* For very small screens, tighten spacing */
 @media (max-width: 480px) {
     .products-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        padding: 10px;
-        width: 100%;
-        margin: 20px auto;
+        padding: 30px 15% !important;
     }
     
     .product-item {
-        min-height: auto;
-        aspect-ratio: 1/1;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        position: relative;
-        overflow: hidden;
+        min-height: 380px !important;
     }
     
     .product-image-container {
@@ -1082,6 +1108,41 @@ button:hover ~ .cursor-trailer,
         height: 100%;
         background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.4) 100%);
         z-index: 1;
+    }
+    
+    .cold-section {
+        padding: 60px 0 30px;
+    }
+    
+    .cold-section .content-container {
+        padding: 0 5px;
+    }
+    
+    .main-nav {
+        background-color: transparent !important;
+    }
+    
+    .nav-scrolled {
+        background-color: transparent !important;
+        backdrop-filter: none;
+        box-shadow: none;
+    }
+    
+    .cta-container {
+        padding: 15px;
+        width: 95%;
+        margin-top: 100px; /* Much more space on small screens */
+    }
+    
+    .cta-title {
+        font-size: 1.5rem; /* Smaller font size for mobile */
+        margin-bottom: 20px;
+        line-height: 1.4;
+    }
+    
+    .cta-button {
+        padding: 15px 30px;
+        font-size: 1rem;
     }
 }
 

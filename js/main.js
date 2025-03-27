@@ -856,80 +856,323 @@ function setupProductCarousel() {
     };
 }
 
+// Mobile Carousel Implementation
+function setupMobileCarousel() {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) return null;
+    
+    const container = document.querySelector('.products-container');
+    if (!container) return null;
+    
+    // Remove any existing cloned items
+    const existingClones = container.querySelectorAll('.cloned-item');
+    existingClones.forEach(clone => clone.remove());
+    
+    // Clear any existing classes or styles
+    container.style.transform = '';
+    container.style.transition = '';
+    
+    // Get original items
+    const items = Array.from(container.querySelectorAll('.product-item:not(.cloned-item)'));
+    if (items.length < 3) return null;
+    
+    // Clone items for infinite scrolling
+    const firstItems = items.slice(0, 3);
+    const lastItems = items.slice(-3);
+    
+    // Add clones to end and beginning
+    lastItems.forEach(item => {
+        const clone = item.cloneNode(true);
+        clone.classList.add('cloned-item');
+        container.insertBefore(clone, container.firstChild);
+    });
+    
+    firstItems.forEach(item => {
+        const clone = item.cloneNode(true);
+        clone.classList.add('cloned-item');
+        container.appendChild(clone);
+    });
+    
+    // Calculate item width including gap
+    const itemWidth = items[0].offsetWidth;
+    const gap = parseInt(window.getComputedStyle(container).columnGap || 10);
+    const slideWidth = itemWidth + gap;
+    
+    // Set initial scroll position to show first real item
+    setTimeout(() => {
+        container.scrollLeft = lastItems.length * slideWidth;
+        updateActiveItems();
+    }, 10);
+    
+    // State variables for carousel
+    let autoScrollInterval = null;
+    let isDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let scrollVelocity = 0;
+    let momentumInterval = null;
+    let lastScrollLeft = 0;
+    let isScrolling = false;
+    
+    // Auto scroll function
+    function startAutoScroll() {
+        stopAutoScroll();
+        
+        autoScrollInterval = setInterval(() => {
+            if (isDragging || isScrolling) return;
+            
+            // Scroll right slowly
+            container.scrollLeft += 1;
+            
+            // Check infinite scroll boundaries
+            checkInfiniteScroll();
+            
+            // Update active items
+            updateActiveItems();
+        }, 30); // Slow continuous scroll
+    }
+    
+    function stopAutoScroll() {
+        if (autoScrollInterval) {
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = null;
+        }
+    }
+    
+    // Check infinite scroll
+    function checkInfiniteScroll() {
+        const allItems = container.querySelectorAll('.product-item');
+        const totalItems = items.length;
+        
+        // Calculate thresholds
+        const containerWidth = container.clientWidth;
+        const threshold = slideWidth * 2;
+        
+        // If scrolled too far right
+        if (container.scrollLeft > slideWidth * (totalItems + lastItems.length - 1)) {
+            container.scrollLeft = slideWidth * lastItems.length;
+        }
+        
+        // If scrolled too far left
+        if (container.scrollLeft < slideWidth) {
+            container.scrollLeft = slideWidth * totalItems;
+        }
+    }
+    
+    // Update which item is active (in the center)
+    function updateActiveItems() {
+        const allItems = container.querySelectorAll('.product-item');
+        const center = container.scrollLeft + container.offsetWidth / 2;
+        
+        allItems.forEach(item => {
+            const itemLeft = item.offsetLeft;
+            const itemCenter = itemLeft + item.offsetWidth / 2;
+            const distanceFromCenter = Math.abs(center - itemCenter);
+            
+            // Remove active class from all
+            item.classList.remove('active');
+            
+            // Make items closer to center larger
+            const scale = Math.max(0.85, 1 - (distanceFromCenter / container.offsetWidth) * 0.5);
+            item.style.transform = `scale(${scale})`;
+            
+            // Add active class to center item
+            if (distanceFromCenter < item.offsetWidth * 0.5) {
+                item.classList.add('active');
+            }
+        });
+    }
+    
+    // Handle touch/mouse events
+    function handleTouchStart(e) {
+        isDragging = true;
+        startX = e.type === 'touchstart' ? e.touches[0].pageX : e.pageX;
+        startScrollLeft = container.scrollLeft;
+        lastScrollLeft = startScrollLeft;
+        scrollVelocity = 0;
+        
+        // Stop auto scroll temporarily
+        stopAutoScroll();
+        
+        // Stop any ongoing momentum scrolling
+        if (momentumInterval) {
+            clearInterval(momentumInterval);
+            momentumInterval = null;
+        }
+    }
+    
+    function handleTouchMove(e) {
+        if (!isDragging) return;
+        
+        // Prevent page scrolling
+        e.preventDefault();
+        
+        const x = e.type === 'touchmove' ? e.touches[0].pageX : e.pageX;
+        const diff = x - startX;
+        
+        // Calculate velocity for momentum scrolling
+        scrollVelocity = lastScrollLeft - container.scrollLeft;
+        lastScrollLeft = container.scrollLeft;
+        
+        // Move the container
+        container.scrollLeft = startScrollLeft - diff;
+        
+        // Update active items while dragging
+        updateActiveItems();
+        
+        // Check infinite scroll while dragging
+        checkInfiniteScroll();
+    }
+    
+    function handleTouchEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        // Start momentum scrolling
+        if (Math.abs(scrollVelocity) > 0.5) {
+            let velocity = scrollVelocity * 0.95; // Initial velocity with dampening
+            
+            // Set momentum scrolling with gradually decreasing velocity
+            momentumInterval = setInterval(() => {
+                if (Math.abs(velocity) < 0.2) {
+                    clearInterval(momentumInterval);
+                    momentumInterval = null;
+                    snapToClosestItem();
+                    return;
+                }
+                
+                // Apply velocity with friction
+                container.scrollLeft -= velocity;
+                velocity *= 0.95; // Friction factor
+                
+                // Update active items during momentum scroll
+                updateActiveItems();
+                
+                // Check infinite scroll during momentum
+                checkInfiniteScroll();
+            }, 16); // ~60fps
+        } else {
+            // If no significant velocity, just snap to the closest item
+            snapToClosestItem();
+        }
+        
+        // Restart auto scrolling after a delay
+        setTimeout(() => {
+            if (!isDragging && !momentumInterval) {
+                startAutoScroll();
+            }
+        }, 2000);
+    }
+    
+    // Snap to closest item (centered)
+    function snapToClosestItem() {
+        isScrolling = true;
+        
+        const allItems = container.querySelectorAll('.product-item');
+        const center = container.scrollLeft + container.offsetWidth / 2;
+        let closestItem = null;
+        let closestDistance = Infinity;
+        
+        allItems.forEach(item => {
+            const itemLeft = item.offsetLeft;
+            const itemCenter = itemLeft + item.offsetWidth / 2;
+            const distanceFromCenter = Math.abs(center - itemCenter);
+            
+            if (distanceFromCenter < closestDistance) {
+                closestDistance = distanceFromCenter;
+                closestItem = item;
+            }
+        });
+        
+        if (closestItem) {
+            const targetScrollLeft = closestItem.offsetLeft - 
+                (container.offsetWidth - closestItem.offsetWidth) / 2;
+            
+            // Smooth scroll to target
+            const startScrollLeft = container.scrollLeft;
+            const scrollDiff = targetScrollLeft - startScrollLeft;
+            const duration = 300; // ms
+            const startTime = performance.now();
+            
+            function scrollStep(timestamp) {
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function for smooth deceleration
+                const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+                
+                container.scrollLeft = startScrollLeft + scrollDiff * easeOutCubic;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(scrollStep);
+                } else {
+                    isScrolling = false;
+                    updateActiveItems();
+                    
+                    // Check infinite scroll after snapping
+                    checkInfiniteScroll();
+                }
+            }
+            
+            requestAnimationFrame(scrollStep);
+        } else {
+            isScrolling = false;
+        }
+    }
+    
+    // Add event listeners
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd);
+    
+    // Also handle mouse events for testing on desktop
+    container.addEventListener('mousedown', handleTouchStart, { passive: false });
+    container.addEventListener('mousemove', handleTouchMove, { passive: false });
+    container.addEventListener('mouseup', handleTouchEnd);
+    container.addEventListener('mouseleave', handleTouchEnd);
+    
+    // Scroll event for updating active items
+    container.addEventListener('scroll', () => {
+        if (!isDragging && !momentumInterval) {
+            updateActiveItems();
+            checkInfiniteScroll();
+        }
+    }, { passive: true });
+    
+    // Start auto-scrolling
+    startAutoScroll();
+    
+    // Return cleanup function
+    return {
+        kill: () => {
+            // Remove event listeners
+            container.removeEventListener('touchstart', handleTouchStart);
+            container.removeEventListener('touchmove', handleTouchMove);
+            container.removeEventListener('touchend', handleTouchEnd);
+            container.removeEventListener('mousedown', handleTouchStart);
+            container.removeEventListener('mousemove', handleTouchMove);
+            container.removeEventListener('mouseup', handleTouchEnd);
+            container.removeEventListener('mouseleave', handleTouchEnd);
+            
+            // Stop intervals
+            stopAutoScroll();
+            if (momentumInterval) {
+                clearInterval(momentumInterval);
+            }
+            
+            // Remove cloned items
+            const clones = container.querySelectorAll('.cloned-item');
+            clones.forEach(clone => clone.remove());
+        }
+    };
+}
+
 // Initialize product animations
 function initProductAnimations() {
     const productItems = document.querySelectorAll('.product-item');
     const productsContainer = document.querySelector('.products-container');
+    const isMobile = window.innerWidth <= 768;
     
-    // Check if on mobile device - if so, don't initialize carousel
-    if (window.innerWidth <= 768) {
-        // Clear existing animations if they exist
-        if (window.productScrollEffect) {
-            window.productScrollEffect.kill();
-            window.productScrollEffect = null;
-        }
-        
-        if (window.productCarousel) {
-            window.productCarousel.kill();
-            window.productCarousel = null;
-        }
-        
-        // Remove any existing carousel elements
-        const existingWrapper = document.querySelector('.products-wrapper');
-        if (existingWrapper) {
-            const container = existingWrapper.querySelector('.products-container');
-            if (container) {
-                // Remove cloned items to ensure a clean slate
-                const clonedItems = container.querySelectorAll('.cloned-item');
-                clonedItems.forEach(item => item.remove());
-                
-                // Move the container out of the wrapper
-                existingWrapper.parentNode.insertBefore(container, existingWrapper);
-                existingWrapper.remove();
-            }
-        }
-        
-        // Remove carousel controls
-        const existingControls = document.querySelector('.carousel-controls');
-        if (existingControls) {
-            existingControls.remove();
-        }
-        
-        // Remove all cloned items
-        const clonedItems = document.querySelectorAll('.cloned-item');
-        clonedItems.forEach(item => item.remove());
-        
-        // Reset all animations and styles for mobile grid layout
-        if (productsContainer) {
-            productsContainer.style.transform = 'none';
-            productsContainer.style.transition = 'none';
-            productsContainer.style.animation = 'none';
-            productsContainer.classList.remove('ios-scrolling');
-            productsContainer.style.overflow = 'visible';
-            productsContainer.style.scrollBehavior = 'auto';
-            productsContainer.dataset.infiniteScrollReady = 'false';
-        }
-        
-        // Reset all product items to default styles
-        if (productItems.length) {
-            productItems.forEach(item => {
-                item.style.transform = 'none';
-                item.style.transition = 'none';
-                item.style.animation = 'none';
-                
-                const image = item.querySelector('.product-image');
-                if (image) {
-                    image.style.transform = 'none';
-                    image.style.transition = 'none';
-                    image.style.animation = 'none';
-                }
-            });
-        }
-        
-        return; // Exit early - don't initialize carousel on mobile
-    }
-    
-    // Continue with desktop animations
     // Clear existing animations if they exist
     if (window.productScrollEffect) {
         window.productScrollEffect.kill();
@@ -939,6 +1182,11 @@ function initProductAnimations() {
     if (window.productCarousel) {
         window.productCarousel.kill();
         window.productCarousel = null;
+    }
+    
+    if (window.mobileCarousel) {
+        window.mobileCarousel.kill();
+        window.mobileCarousel = null;
     }
     
     // Remove any existing carousel elements
@@ -962,6 +1210,46 @@ function initProductAnimations() {
         existingControls.remove();
     }
     
+    // Remove all cloned items
+    const clonedItems = document.querySelectorAll('.cloned-item');
+    clonedItems.forEach(item => item.remove());
+    
+    // Check if on mobile device - if so, initialize mobile carousel
+    if (isMobile) {
+        // Reset all animations and styles for mobile
+        if (productsContainer) {
+            productsContainer.style.transform = 'none';
+            productsContainer.style.transition = 'none';
+            productsContainer.style.animation = 'none';
+            productsContainer.classList.remove('ios-scrolling');
+            productsContainer.style.overflow = 'auto';
+            productsContainer.style.scrollBehavior = 'smooth';
+            productsContainer.dataset.infiniteScrollReady = 'false';
+        }
+        
+        // Reset all product items to default styles
+        if (productItems.length) {
+            productItems.forEach(item => {
+                item.style.transform = 'none';
+                item.style.transition = 'transform 0.3s ease';
+                item.style.animation = 'none';
+                
+                const image = item.querySelector('.product-image');
+                if (image) {
+                    image.style.transform = 'none';
+                    image.style.transition = 'none';
+                    image.style.animation = 'none';
+                }
+            });
+        }
+        
+        // Setup mobile carousel
+        window.mobileCarousel = setupMobileCarousel();
+        
+        return; // Exit early - mobile carousel is now initialized
+    }
+    
+    // Continue with desktop animations
     // Reset product items to default styles
     if (productItems.length) {
         productItems.forEach(item => {
@@ -1008,6 +1296,7 @@ function initProductAnimations() {
 
 // Make sure products are visible on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize animations
     initProductAnimations();
     
     // Handle window resize events
