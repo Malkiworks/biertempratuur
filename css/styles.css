@@ -997,7 +997,7 @@ button:hover ~ .cursor-trailer,
 @media (max-width: 480px) {
     .products-container {
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        gap: 10px;
         padding: 10px;
         width: 100%;
         margin: 20px auto;
@@ -1008,68 +1008,80 @@ button:hover ~ .cursor-trailer,
         aspect-ratio: 1/1;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
     }
     
     .product-image-container {
-        height: 45%;
-        border-radius: 12px 12px 0 0;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 12px;
+    }
+    
+    .product-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
     }
     
     .product-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
         padding: 8px;
-        height: 55%;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
         border-radius: 0 0 12px 12px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        z-index: 2;
     }
     
     .product-title {
         font-size: 0.9rem;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         line-height: 1.2;
+        color: white;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
     
     .product-description {
-        font-size: 0.7rem;
-        margin-bottom: 4px;
-        line-height: 1.2;
-        -webkit-line-clamp: 2;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        display: none;
     }
     
     .product-meta {
-        padding-top: 4px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-    
-    .product-feature {
-        font-size: 0.65rem;
-        line-height: 1.1;
-        margin-bottom: 1px;
-    }
-    
-    .product-feature i {
-        font-size: 0.7rem;
-        margin-right: 3px;
+        display: none;
     }
     
     .product-price {
+        top: 8px;
+        right: 8px;
         padding: 4px 8px;
         font-size: 0.75rem;
+        z-index: 2;
     }
     
     .product-tag {
+        top: 8px;
+        left: 8px;
         padding: 3px 6px;
         font-size: 0.65rem;
+        z-index: 2;
     }
     
     .product-overlay {
-        padding: 6px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.4) 100%);
+        z-index: 1;
     }
 }
 
