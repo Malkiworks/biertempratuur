@@ -43,41 +43,6 @@ window.addEventListener('load', () => {
     });
 });
 
-// ===== Custom Cursor =====
-const cursor = document.querySelector('.custom-cursor');
-const cursorTrailer = document.querySelector('.cursor-trailer');
-
-document.addEventListener('mousemove', (e) => {
-    // Main cursor follows mouse instantly
-    gsap.to(cursor, {
-        left: e.clientX,
-        top: e.clientY,
-        duration: 0,
-    });
-    
-    // Trailer follows with delay
-    gsap.to(cursorTrailer, {
-        left: e.clientX,
-        top: e.clientY,
-        duration: 0.3,
-        ease: 'power2.out'
-    });
-});
-
-// Custom cursor interactions
-const interactiveElements = document.querySelectorAll('a, button, .product-item');
-interactiveElements.forEach(el => {
-    el.addEventListener('mouseenter', () => {
-        cursor.classList.add('cursor-hover');
-        cursorTrailer.classList.add('trailer-hover');
-    });
-    
-    el.addEventListener('mouseleave', () => {
-        cursor.classList.remove('cursor-hover');
-        cursorTrailer.classList.remove('trailer-hover');
-    });
-});
-
 // ===== Navigation Effects =====
 const nav = document.querySelector('.main-nav');
 
@@ -406,23 +371,11 @@ function setupProductCarousel() {
     const container = document.querySelector('.products-container');
     if (!container) return null;
     
-    // Add wrapper for gradients if it doesn't exist
+    // Do not create a wrapper - work directly with the container
     let wrapper = container.parentElement;
-    if (!wrapper.classList.contains('products-wrapper')) {
-        wrapper = document.createElement('div');
-        wrapper.className = 'products-wrapper';
-        container.parentNode.insertBefore(wrapper, container);
-        wrapper.appendChild(container);
-        
-        // Add gradient overlays
-        const rightGradient = document.createElement('div');
-        rightGradient.className = 'scroll-gradient-right';
-        wrapper.appendChild(rightGradient);
-        
-        const leftGradient = document.createElement('div');
-        leftGradient.className = 'scroll-gradient-left';
-        wrapper.appendChild(leftGradient);
-    }
+    
+    // Set up cloned items for infinite scroll if not already done
+    setupInfiniteScroll(container);
     
     // Initialize state
     let isDragging = false;
@@ -431,18 +384,26 @@ function setupProductCarousel() {
     let autoScrollInterval = null;
     let autoScrolling = true;
     let resetInProgress = false;
+    let lastInteractionTime = 0;
+    let scrollSpeed = 2; // Faster animation speed
+    let manualScrolling = false;
+    let touchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     
-    // Set cursor style
-    container.style.cursor = 'grab';
+    // Set cursor style (only on desktop)
+    if (!touchDevice) {
+        container.style.cursor = 'grab';
+    }
     
     // Mouse/touch down event handler
     function handleMouseDown(e) {
         if (resetInProgress) return;
         isDragging = true;
+        manualScrolling = true;
         startX = e.pageX - container.offsetLeft;
         scrollLeft = container.scrollLeft;
-        container.style.cursor = 'grabbing';
+        if (!touchDevice) container.style.cursor = 'grabbing';
         container.style.scrollBehavior = 'auto'; // Disable smooth scrolling during drag
+        lastInteractionTime = Date.now();
         
         // Stop auto-scrolling temporarily
         stopAutoScroll();
@@ -452,9 +413,11 @@ function setupProductCarousel() {
     function handleTouchStart(e) {
         if (resetInProgress) return;
         isDragging = true;
+        manualScrolling = true;
         startX = e.touches[0].pageX - container.offsetLeft;
         scrollLeft = container.scrollLeft;
         container.style.scrollBehavior = 'auto'; // Disable smooth scrolling during drag
+        lastInteractionTime = Date.now();
         
         // Add class to body to prevent unwanted scrolling
         document.body.classList.add('touching');
@@ -468,11 +431,12 @@ function setupProductCarousel() {
         if (!isDragging || resetInProgress) return;
         e.preventDefault();
         const x = e.pageX - container.offsetLeft;
-        const walk = (x - startX) * 1.5; // Scroll speed multiplier (reduced for better control)
+        const walk = (x - startX) * 2.5; // Increased multiplier for more responsive dragging
         container.scrollLeft = scrollLeft - walk;
+        lastInteractionTime = Date.now();
         
-        // Show/hide left gradient based on scroll position
-        updateGradient();
+        // Check infinite scroll boundaries immediately during drag
+        checkInfiniteScrollBoundaries();
     }
     
     // Touch move event handler
@@ -480,25 +444,107 @@ function setupProductCarousel() {
         if (!isDragging || resetInProgress) return;
         e.preventDefault(); // Prevent page scroll while dragging
         const x = e.touches[0].pageX - container.offsetLeft;
-        const walk = (x - startX) * 1.5; // Scroll speed multiplier (reduced for better control)
+        const walk = (x - startX) * 2.5; // Increased multiplier for more responsive dragging
         container.scrollLeft = scrollLeft - walk;
+        lastInteractionTime = Date.now();
         
-        // Show/hide left gradient based on scroll position
-        updateGradient();
+        // Check infinite scroll boundaries immediately during drag
+        checkInfiniteScrollBoundaries();
     }
     
-    // Helper function to update gradient visibility
-    function updateGradient() {
-        const leftGradient = wrapper.querySelector('.scroll-gradient-left');
-        const rightGradient = wrapper.querySelector('.scroll-gradient-right');
+    // Setup infinite scroll by cloning items
+    function setupInfiniteScroll(container) {
+        // Remove any existing cloned items first to avoid duplication on resize/reinit
+        const existingClones = container.querySelectorAll('.cloned-item');
+        existingClones.forEach(clone => clone.remove());
         
-        if (leftGradient) {
-            leftGradient.style.opacity = container.scrollLeft > 20 ? 1 : 0;
+        // Reset the data attribute
+        container.dataset.infiniteScrollReady = 'false';
+        
+        const items = container.querySelectorAll('.product-item:not(.cloned-item)');
+        if (items.length < 2) return;
+        
+        // Clone enough items to fill the container width plus a bit more
+        // We'll ensure at least one full screen width of clones on each side
+        const containerWidth = container.clientWidth;
+        let currentWidth = 0;
+        let itemsToClone = [];
+        
+        // Measure how many items we need to clone to fill at least one screen width
+        for (let i = 0; i < items.length && currentWidth < containerWidth; i++) {
+            currentWidth += items[i].offsetWidth + parseInt(window.getComputedStyle(container).columnGap || 0);
+            itemsToClone.push(i);
         }
         
-        if (rightGradient) {
-            const maxScroll = container.scrollWidth - container.clientWidth;
-            rightGradient.style.opacity = container.scrollLeft < maxScroll - 20 ? 1 : 0;
+        // If we don't have enough items, clone all of them
+        if (itemsToClone.length === 0 || itemsToClone.length === items.length) {
+            itemsToClone = Array.from(items).map((_, i) => i);
+        }
+        
+        // Clone items and add to end and beginning
+        for (let i of itemsToClone) {
+            const clone = items[i].cloneNode(true);
+            clone.classList.add('cloned-item');
+            container.appendChild(clone);
+        }
+        
+        for (let i = items.length - itemsToClone.length; i < items.length; i++) {
+            const clone = items[i >= 0 ? i : 0].cloneNode(true);
+            clone.classList.add('cloned-item');
+            container.insertBefore(clone, container.firstChild);
+        }
+        
+        // Mark container as having infinite scroll ready
+        container.dataset.infiniteScrollReady = 'true';
+        
+        // Initial scroll position to show original items
+        setTimeout(() => {
+            const totalCloneWidth = itemsToClone.reduce((sum, i) => {
+                return sum + items[i].offsetWidth + 
+                      parseInt(window.getComputedStyle(container).columnGap || 0);
+            }, 0);
+            
+            container.scrollLeft = totalCloneWidth;
+            checkInfiniteScrollBoundaries();
+        }, 50);
+    }
+    
+    // Check for infinite scroll boundaries
+    function checkInfiniteScrollBoundaries() {
+        if (resetInProgress) return;
+        
+        const items = container.querySelectorAll('.product-item:not(.cloned-item)');
+        if (items.length <= 1) return;
+        
+        const originalItemsWidth = Array.from(items).reduce((sum, item) => {
+            return sum + item.offsetWidth + 
+                  parseInt(window.getComputedStyle(container).columnGap || 0);
+        }, 0);
+        
+        // We use the first and last few cloned items as our threshold
+        const firstClones = container.querySelectorAll('.cloned-item:nth-child(-n+3)');
+        const threshold = Array.from(firstClones).reduce((sum, item) => {
+            return sum + item.offsetWidth + 
+                  parseInt(window.getComputedStyle(container).columnGap || 0);
+        }, 0);
+        
+        // Check if we've scrolled too far left or right and jump to the appropriate position
+        if (container.scrollLeft < threshold / 2) {
+            resetInProgress = true;
+            container.style.scrollBehavior = 'auto';
+            container.scrollLeft += originalItemsWidth;
+            setTimeout(() => {
+                resetInProgress = false;
+                container.style.scrollBehavior = 'smooth';
+            }, 10);
+        } else if (container.scrollLeft > originalItemsWidth + threshold) {
+            resetInProgress = true;
+            container.style.scrollBehavior = 'auto';
+            container.scrollLeft -= originalItemsWidth;
+            setTimeout(() => {
+                resetInProgress = false;
+                container.style.scrollBehavior = 'smooth';
+            }, 10);
         }
     }
     
@@ -506,24 +552,27 @@ function setupProductCarousel() {
     function handleMouseUp() {
         if (!isDragging) return;
         isDragging = false;
-        container.style.cursor = 'grab';
+        if (!touchDevice) container.style.cursor = 'grab';
         container.style.scrollBehavior = 'smooth'; // Re-enable smooth scrolling
+        lastInteractionTime = Date.now();
         
         // Remove touch handling class
         document.body.classList.remove('touching');
         
-        // Resume auto-scrolling if it was enabled
+        // Resume auto-scrolling immediately without delay
+        manualScrolling = false;
         if (autoScrolling) {
-            setTimeout(() => {
-                startAutoScroll();
-            }, 500); // Small delay before resuming
+            startAutoScroll();
         }
     }
     
     // Handle scroll events
     function handleScroll() {
         if (isDragging || resetInProgress) return;
-        updateGradient();
+        lastInteractionTime = Date.now();
+        
+        // Check infinite scroll boundaries
+        checkInfiniteScrollBoundaries();
     }
     
     // Handle automatic scrolling
@@ -531,31 +580,11 @@ function setupProductCarousel() {
         if (autoScrollInterval) return;
         
         autoScrollInterval = setInterval(() => {
-            if (!container || isDragging || resetInProgress) return;
+            if (!container || isDragging || resetInProgress || manualScrolling) return;
             
-            const maxScroll = container.scrollWidth - container.clientWidth;
-            
-            if (container.scrollLeft >= maxScroll - 5) {
-                // Smoothly reset to beginning when reaching the end
-                resetInProgress = true;
-                
-                // Use setTimeout to ensure we don't interfere with user scrolling
-                setTimeout(() => {
-                    container.style.scrollBehavior = 'auto';
-                    container.scrollLeft = 0;
-                    
-                    // Reset back to smooth scrolling after a delay
-                    setTimeout(() => {
-                        container.style.scrollBehavior = 'smooth';
-                        resetInProgress = false;
-                    }, 100);
-                }, 300);
-            } else {
-                container.scrollLeft += 1; // Slow continuous scroll
-            }
-            
-            updateGradient();
-        }, 20);
+            container.scrollLeft += scrollSpeed;
+            checkInfiniteScrollBoundaries();
+        }, 16); // ~60fps for smoother animation
     }
     
     function stopAutoScroll() {
@@ -565,11 +594,89 @@ function setupProductCarousel() {
         }
     }
     
+    // Setup animation for product items - use touchstart/click events for mobile compatibility
+    function setupProductItemAnimations() {
+        const productItems = container.querySelectorAll('.product-item');
+        
+        productItems.forEach(item => {
+            // Reset any existing animations
+            gsap.set(item, { clearProps: 'all' });
+            
+            if (!touchDevice) {
+                // Add hover animation (desktop only)
+                item.addEventListener('mouseenter', () => {
+                    if (!isDragging) {
+                        gsap.to(item, {
+                            y: -8,
+                            scale: 1.03,
+                            boxShadow: '0 15px 30px rgba(0, 0, 0, 0.25)',
+                            duration: 0.3,
+                            ease: 'power2.out'
+                        });
+                        
+                        // Also animate the image
+                        const image = item.querySelector('.product-image');
+                        if (image) {
+                            gsap.to(image, {
+                                scale: 1.08,
+                                duration: 0.5,
+                                ease: 'power1.out'
+                            });
+                        }
+                    }
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    gsap.to(item, {
+                        y: 0,
+                        scale: 1,
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
+                        duration: 0.4,
+                        ease: 'power2.out'
+                    });
+                    
+                    // Reset image animation
+                    const image = item.querySelector('.product-image');
+                    if (image) {
+                        gsap.to(image, {
+                            scale: 1,
+                            duration: 0.5,
+                            ease: 'power1.out'
+                        });
+                    }
+                });
+            } else {
+                // Add tap/touch animation (mobile only)
+                item.addEventListener('touchstart', () => {
+                    if (isDragging) return;
+                    
+                    gsap.to(item, {
+                        y: -5,
+                        scale: 1.02,
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.25)',
+                        duration: 0.2,
+                        ease: 'power2.out'
+                    });
+                });
+                
+                item.addEventListener('touchend', () => {
+                    gsap.to(item, {
+                        y: 0,
+                        scale: 1,
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                });
+            }
+        });
+    }
+    
     // Add event listeners with proper passive settings for better performance
     container.addEventListener('mousedown', handleMouseDown, { passive: false });
     container.addEventListener('mousemove', handleMouseMove, { passive: false });
-    container.addEventListener('mouseleave', handleMouseUp, { passive: true });
     container.addEventListener('mouseup', handleMouseUp, { passive: true });
+    container.addEventListener('mouseleave', handleMouseUp, { passive: true });
     
     container.addEventListener('touchstart', handleTouchStart, { passive: false });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -578,13 +685,16 @@ function setupProductCarousel() {
     
     container.addEventListener('scroll', handleScroll, { passive: true });
     
-    // Add resize event listener to update layout after orientation changes
+    // Add resize event listener to handle orientation changes
     const handleResize = () => {
-        updateGradient();
+        // Re-initialize the infinite scroll with proper clone widths
+        // This is important for mobile orientation changes
+        setupInfiniteScroll(container);
     };
     window.addEventListener('resize', handleResize, { passive: true });
     
-    // Add controls
+    // Add controls directly to the parent instead of the wrapper
+    const parent = container.parentElement;
     const controls = document.createElement('div');
     controls.className = 'carousel-controls';
     controls.innerHTML = `
@@ -592,7 +702,7 @@ function setupProductCarousel() {
             <i class="fas fa-pause"></i>
         </button>
     `;
-    wrapper.parentNode.insertBefore(controls, wrapper.nextSibling);
+    parent.insertBefore(controls, container.nextSibling);
     
     // Add control functionality
     const controlButton = controls.querySelector('.carousel-control');
@@ -600,16 +710,18 @@ function setupProductCarousel() {
         autoScrolling = !autoScrolling;
         
         if (autoScrolling) {
-            startAutoScroll();
             this.innerHTML = '<i class="fas fa-pause"></i>';
+            manualScrolling = false;
+            startAutoScroll();
         } else {
             stopAutoScroll();
             this.innerHTML = '<i class="fas fa-play"></i>';
+            manualScrolling = true;
         }
     });
     
-    // Initial gradient update
-    updateGradient();
+    // Setup product item animations
+    setupProductItemAnimations();
     
     // Start auto-scrolling by default
     container.style.scrollBehavior = 'smooth';
@@ -621,8 +733,8 @@ function setupProductCarousel() {
             // Remove event listeners
             container.removeEventListener('mousedown', handleMouseDown);
             container.removeEventListener('mousemove', handleMouseMove);
-            container.removeEventListener('mouseleave', handleMouseUp);
             container.removeEventListener('mouseup', handleMouseUp);
+            container.removeEventListener('mouseleave', handleMouseUp);
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleMouseUp);
@@ -667,6 +779,11 @@ function initProductAnimations() {
     if (existingWrapper) {
         const container = existingWrapper.querySelector('.products-container');
         if (container) {
+            // Remove cloned items to ensure a clean slate
+            const clonedItems = container.querySelectorAll('.cloned-item');
+            clonedItems.forEach(item => item.remove());
+            
+            // Move the container out of the wrapper
             existingWrapper.parentNode.insertBefore(container, existingWrapper);
             existingWrapper.remove();
         }
@@ -684,8 +801,14 @@ function initProductAnimations() {
             gsap.set(item, {
                 clearProps: 'all'
             });
-            item.style.visibility = 'visible';
-            item.style.opacity = 1;
+            // Make sure items are visible with smooth transitions
+            gsap.to(item, {
+                autoAlpha: 1,
+                duration: 0.5,
+                ease: 'power2.out',
+                stagger: 0.1,
+                delay: 0.2
+            });
         });
     }
     
@@ -694,10 +817,26 @@ function initProductAnimations() {
         gsap.set(productsContainer, {
             clearProps: 'all'
         });
+        
+        // Reset any data attributes
+        productsContainer.dataset.infiniteScrollReady = 'false';
     }
     
-    // Setup the new carousel effect
-    window.productCarousel = setupProductCarousel();
+    // Setup the new carousel effect with a slight delay to ensure DOM is ready
+    setTimeout(() => {
+        // Create carousel with improved infinite scrolling
+        window.productCarousel = setupProductCarousel();
+        
+        // Add entrance animation for product items (original items only)
+        gsap.from('.product-item:not(.cloned-item)', {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+            stagger: 0.1,
+            delay: 0.3
+        });
+    }, 100);
 }
 
 // Make sure products are visible on page load
