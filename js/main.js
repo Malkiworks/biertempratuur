@@ -374,8 +374,10 @@ function setupProductCarousel() {
     // Do not create a wrapper - work directly with the container
     let wrapper = container.parentElement;
     
-    // Detect iOS Safari
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    // More comprehensive detection for iOS Safari
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                     /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                     (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
     const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     
     // Set up cloned items for infinite scroll if not already done
@@ -397,6 +399,23 @@ function setupProductCarousel() {
     if (!touchDevice) {
         container.style.cursor = 'grab';
     }
+    
+    // Force start the animation with a small delay to ensure iOS is ready
+    setTimeout(() => {
+        if (isSafari || isiOS) {
+            // Reset any existing scrolling state
+            stopAutoScroll();
+            // Force scroll to initial position
+            container.scrollLeft = container.scrollLeft + 1;
+            // Start the animation with a delay
+            setTimeout(() => {
+                startAutoScroll();
+            }, 300);
+        } else {
+            // Start auto-scrolling immediately for non-Safari
+            startAutoScroll();
+        }
+    }, 500);
     
     // Mouse/touch down event handler
     function handleMouseDown(e) {
@@ -428,6 +447,159 @@ function setupProductCarousel() {
         
         // Stop auto-scrolling temporarily
         stopAutoScroll();
+    }
+    
+    // Handle automatic scrolling
+    function startAutoScroll() {
+        // Clear any existing animation to prevent duplication
+        stopAutoScroll();
+        
+        // Safari on iOS has animation issues, so we need to use a different approach
+        if (isSafari || isiOS) {
+            // For iOS Safari, use requestAnimationFrame for smoother performance
+            let lastTimestamp = null;
+            let animationId = null;
+            
+            const scrollAnimation = (timestamp) => {
+                if (!container || isDragging || resetInProgress || manualScrolling) {
+                    lastTimestamp = null;
+                    animationId = requestAnimationFrame(scrollAnimation);
+                    return;
+                }
+                
+                if (!lastTimestamp) {
+                    lastTimestamp = timestamp;
+                }
+                
+                // Only update every few frames for iOS to prevent jank
+                const elapsed = timestamp - lastTimestamp;
+                if (elapsed > 32) { // Approximately 30fps for iOS
+                    container.scrollLeft += scrollSpeed;
+                    checkInfiniteScrollBoundaries();
+                    lastTimestamp = timestamp;
+                }
+                
+                animationId = requestAnimationFrame(scrollAnimation);
+            };
+            
+            animationId = requestAnimationFrame(scrollAnimation);
+            
+            // Store the animation ID for cleanup
+            autoScrollInterval = {
+                cancel: () => {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                }
+            };
+            
+            // Add a special class for iOS to help with CSS optimizations
+            container.classList.add('ios-scrolling');
+        } else {
+            // For other browsers, use the standard interval approach
+            autoScrollInterval = setInterval(() => {
+                if (!container || isDragging || resetInProgress || manualScrolling) return;
+                
+                container.scrollLeft += scrollSpeed;
+                checkInfiniteScrollBoundaries();
+            }, 16); // ~60fps for smoother animation
+        }
+    }
+    
+    function stopAutoScroll() {
+        if (autoScrollInterval) {
+            if ((isSafari || isiOS) && autoScrollInterval.cancel) {
+                autoScrollInterval.cancel();
+            } else if (!isSafari && !isiOS) {
+                clearInterval(autoScrollInterval);
+            }
+            autoScrollInterval = null;
+        }
+    }
+    
+    // Setup product item animations with Safari fixes
+    function setupProductItemAnimations() {
+        const productItems = container.querySelectorAll('.product-item');
+        
+        productItems.forEach(item => {
+            // Reset any existing animations
+            gsap.set(item, { clearProps: 'all' });
+            
+            if (!touchDevice) {
+                // Add hover animation (desktop only)
+                item.addEventListener('mouseenter', () => {
+                    if (!isDragging) {
+                        gsap.to(item, {
+                            y: -8,
+                            scale: 1.03,
+                            boxShadow: '0 15px 30px rgba(0, 0, 0, 0.25)',
+                            duration: 0.3,
+                            ease: 'power2.out',
+                            force3D: true // Force 3D transforms for better performance
+                        });
+                        
+                        // Also animate the image
+                        const image = item.querySelector('.product-image');
+                        if (image) {
+                            gsap.to(image, {
+                                scale: 1.08,
+                                duration: 0.5,
+                                ease: 'power1.out',
+                                force3D: true // Force 3D transforms for better performance
+                            });
+                        }
+                    }
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    gsap.to(item, {
+                        y: 0,
+                        scale: 1,
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
+                        duration: 0.4,
+                        ease: 'power2.out',
+                        force3D: true // Force 3D transforms for better performance
+                    });
+                    
+                    // Reset image animation
+                    const image = item.querySelector('.product-image');
+                    if (image) {
+                        gsap.to(image, {
+                            scale: 1,
+                            duration: 0.5,
+                            ease: 'power1.out',
+                            force3D: true // Force 3D transforms for better performance
+                        });
+                    }
+                });
+            } else {
+                // Add tap/touch animation (mobile only)
+                item.addEventListener('touchstart', () => {
+                    if (isDragging) return;
+                    
+                    gsap.to(item, {
+                        y: -5,
+                        scale: 1.02,
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.25)',
+                        duration: 0.2,
+                        ease: 'power2.out',
+                        force3D: true // Force 3D transforms for better performance
+                    });
+                });
+                
+                item.addEventListener('touchend', () => {
+                    gsap.to(item, {
+                        y: 0,
+                        scale: 1,
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
+                        duration: 0.3,
+                        ease: 'power2.out',
+                        force3D: true // Force 3D transforms for better performance
+                    });
+                });
+            }
+        });
     }
     
     // Mouse/touch move event handler
@@ -577,155 +749,6 @@ function setupProductCarousel() {
         
         // Check infinite scroll boundaries
         checkInfiniteScrollBoundaries();
-    }
-    
-    // Handle automatic scrolling
-    function startAutoScroll() {
-        if (autoScrollInterval) return;
-        
-        // Safari on iOS has animation issues, so we need to use a different approach
-        if (isiOS) {
-            // For iOS Safari, use requestAnimationFrame for smoother performance
-            let lastTimestamp = null;
-            let animationId = null;
-            
-            const scrollAnimation = (timestamp) => {
-                if (!container || isDragging || resetInProgress || manualScrolling) {
-                    lastTimestamp = null;
-                    animationId = requestAnimationFrame(scrollAnimation);
-                    return;
-                }
-                
-                if (!lastTimestamp) {
-                    lastTimestamp = timestamp;
-                }
-                
-                // Only update every few frames for iOS to prevent jank
-                const elapsed = timestamp - lastTimestamp;
-                if (elapsed > 32) { // Approximately 30fps for iOS
-                    container.scrollLeft += scrollSpeed;
-                    checkInfiniteScrollBoundaries();
-                    lastTimestamp = timestamp;
-                }
-                
-                animationId = requestAnimationFrame(scrollAnimation);
-            };
-            
-            animationId = requestAnimationFrame(scrollAnimation);
-            
-            // Store the animation ID for cleanup
-            autoScrollInterval = {
-                cancel: () => {
-                    if (animationId) {
-                        cancelAnimationFrame(animationId);
-                        animationId = null;
-                    }
-                }
-            };
-        } else {
-            // For other browsers, use the standard interval approach
-            autoScrollInterval = setInterval(() => {
-                if (!container || isDragging || resetInProgress || manualScrolling) return;
-                
-                container.scrollLeft += scrollSpeed;
-                checkInfiniteScrollBoundaries();
-            }, 16); // ~60fps for smoother animation
-        }
-    }
-    
-    function stopAutoScroll() {
-        if (autoScrollInterval) {
-            if (isiOS && autoScrollInterval.cancel) {
-                autoScrollInterval.cancel();
-            } else if (!isiOS) {
-                clearInterval(autoScrollInterval);
-            }
-            autoScrollInterval = null;
-        }
-    }
-    
-    // Setup product item animations with Safari fixes
-    function setupProductItemAnimations() {
-        const productItems = container.querySelectorAll('.product-item');
-        
-        productItems.forEach(item => {
-            // Reset any existing animations
-            gsap.set(item, { clearProps: 'all' });
-            
-            if (!touchDevice) {
-                // Add hover animation (desktop only)
-                item.addEventListener('mouseenter', () => {
-                    if (!isDragging) {
-                        gsap.to(item, {
-                            y: -8,
-                            scale: 1.03,
-                            boxShadow: '0 15px 30px rgba(0, 0, 0, 0.25)',
-                            duration: 0.3,
-                            ease: 'power2.out',
-                            force3D: true // Force 3D transforms for better performance
-                        });
-                        
-                        // Also animate the image
-                        const image = item.querySelector('.product-image');
-                        if (image) {
-                            gsap.to(image, {
-                                scale: 1.08,
-                                duration: 0.5,
-                                ease: 'power1.out',
-                                force3D: true // Force 3D transforms for better performance
-                            });
-                        }
-                    }
-                });
-                
-                item.addEventListener('mouseleave', () => {
-                    gsap.to(item, {
-                        y: 0,
-                        scale: 1,
-                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
-                        duration: 0.4,
-                        ease: 'power2.out',
-                        force3D: true // Force 3D transforms for better performance
-                    });
-                    
-                    // Reset image animation
-                    const image = item.querySelector('.product-image');
-                    if (image) {
-                        gsap.to(image, {
-                            scale: 1,
-                            duration: 0.5,
-                            ease: 'power1.out',
-                            force3D: true // Force 3D transforms for better performance
-                        });
-                    }
-                });
-            } else {
-                // Add tap/touch animation (mobile only)
-                item.addEventListener('touchstart', () => {
-                    if (isDragging) return;
-                    
-                    gsap.to(item, {
-                        y: -5,
-                        scale: 1.02,
-                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.25)',
-                        duration: 0.2,
-                        ease: 'power2.out',
-                        force3D: true // Force 3D transforms for better performance
-                    });
-                });
-                
-                item.addEventListener('touchend', () => {
-                    gsap.to(item, {
-                        y: 0,
-                        scale: 1,
-                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
-                        duration: 0.3,
-                        ease: 'power2.out',
-                        force3D: true // Force 3D transforms for better performance
-                    });
-                });
-            }
-        });
     }
     
     // Add event listeners with proper passive settings for better performance

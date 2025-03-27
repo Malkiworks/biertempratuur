@@ -661,6 +661,30 @@ button:hover ~ .cursor-trailer,
     touch-action: pan-x; /* Only allow horizontal panning */
     will-change: scroll-position; /* Performance optimization */
     -webkit-transform: translateZ(0); /* Helps with iOS rendering */
+    transform: translate3d(0,0,0);
+    -webkit-perspective: 1000;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Special class added by JS for iOS devices */
+.ios-scrolling {
+    -webkit-transform: translate3d(0,0,0);
+    -webkit-transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transform: translate3d(0,0,0);
+    z-index: 10;
+}
+
+.ios-scrolling .product-item {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+}
+
+.ios-scrolling .product-image {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
 }
 
 /* Style for cloned items (infinite scroll) */
@@ -1031,7 +1055,7 @@ button:hover ~ .cursor-trailer,
 .cta-container {
     position: relative;
     z-index: 10;
-    margin: 40px auto;
+    margin: 60px auto 40px; /* Increased top margin to create more space */
     text-align: center;
     padding: 30px;
     background: rgba(0, 0, 0, 0.1);
@@ -1257,6 +1281,7 @@ button:hover ~ .cursor-trailer,
     .cta-container {
         width: 95%;
         padding: 20px;
+        margin-top: 80px; /* Even more space on medium screens */
     }
     
     .cta-title {
@@ -1400,6 +1425,23 @@ button:hover ~ .cursor-trailer,
         background-color: transparent !important;
         backdrop-filter: none;
         box-shadow: none;
+    }
+    
+    .cta-container {
+        padding: 15px;
+        width: 95%;
+        margin-top: 100px; /* Much more space on small screens */
+    }
+    
+    .cta-title {
+        font-size: 1.5rem; /* Smaller font size for mobile */
+        margin-bottom: 20px;
+        line-height: 1.4;
+    }
+    
+    .cta-button {
+        padding: 15px 30px;
+        font-size: 1rem;
     }
 }
 
