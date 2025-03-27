@@ -385,7 +385,7 @@ function setupProductCarousel() {
     let autoScrolling = true;
     let resetInProgress = false;
     let lastInteractionTime = 0;
-    let scrollSpeed = 3; // Increased animation speed for smoother scrolling
+    let scrollSpeed = 2; // Faster animation speed
     let manualScrolling = false;
     let touchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     
@@ -431,7 +431,7 @@ function setupProductCarousel() {
         if (!isDragging || resetInProgress) return;
         e.preventDefault();
         const x = e.pageX - container.offsetLeft;
-        const walk = (x - startX) * 3.5; // Increased multiplier for more responsive dragging
+        const walk = (x - startX) * 2.5; // Increased multiplier for more responsive dragging
         container.scrollLeft = scrollLeft - walk;
         lastInteractionTime = Date.now();
         
@@ -444,7 +444,7 @@ function setupProductCarousel() {
         if (!isDragging || resetInProgress) return;
         e.preventDefault(); // Prevent page scroll while dragging
         const x = e.touches[0].pageX - container.offsetLeft;
-        const walk = (x - startX) * 3.5; // Increased multiplier for more responsive dragging
+        const walk = (x - startX) * 2.5; // Increased multiplier for more responsive dragging
         container.scrollLeft = scrollLeft - walk;
         lastInteractionTime = Date.now();
         
@@ -465,49 +465,31 @@ function setupProductCarousel() {
         if (items.length < 2) return;
         
         // Clone enough items to fill the container width plus a bit more
-        // We'll ensure at least two full screen widths of clones on each side for smoother dragging
-        const containerWidth = container.clientWidth * 2; // Double the container width for better experience
+        // We'll ensure at least one full screen width of clones on each side
+        const containerWidth = container.clientWidth;
         let currentWidth = 0;
         let itemsToClone = [];
         
-        // First, calculate average item width to see if we need to clone all
-        const avgItemWidth = Array.from(items).reduce((sum, item) => 
-            sum + item.offsetWidth, 0) / items.length;
-        const gapWidth = parseInt(window.getComputedStyle(container).columnGap || 0);
-        
-        // If we need a lot of items to fill the container, just clone all items multiple times
-        if ((avgItemWidth + gapWidth) * items.length < containerWidth) {
-            // Clone all items multiple times to ensure we have enough
-            const multiplier = Math.ceil(containerWidth / ((avgItemWidth + gapWidth) * items.length));
-            
-            for (let j = 0; j < multiplier; j++) {
-                for (let i = 0; i < items.length; i++) {
-                    itemsToClone.push(i);
-                }
-            }
-        } else {
-            // Measure how many items we need to clone to fill at least one screen width
-            for (let i = 0; i < items.length && currentWidth < containerWidth; i++) {
-                currentWidth += items[i].offsetWidth + gapWidth;
-                itemsToClone.push(i);
-                
-                // If we've gone through all items but still need more width, start over
-                if (i === items.length - 1 && currentWidth < containerWidth) {
-                    i = -1; // Will become 0 after the increment
-                }
-            }
+        // Measure how many items we need to clone to fill at least one screen width
+        for (let i = 0; i < items.length && currentWidth < containerWidth; i++) {
+            currentWidth += items[i].offsetWidth + parseInt(window.getComputedStyle(container).columnGap || 0);
+            itemsToClone.push(i);
         }
         
-        // Clone items and add to end
+        // If we don't have enough items, clone all of them
+        if (itemsToClone.length === 0 || itemsToClone.length === items.length) {
+            itemsToClone = Array.from(items).map((_, i) => i);
+        }
+        
+        // Clone items and add to end and beginning
         for (let i of itemsToClone) {
             const clone = items[i].cloneNode(true);
             clone.classList.add('cloned-item');
             container.appendChild(clone);
         }
         
-        // Clone items and add to beginning (in reverse to maintain original order)
-        for (let i = itemsToClone.length - 1; i >= 0; i--) {
-            const clone = items[itemsToClone[i]].cloneNode(true);
+        for (let i = items.length - itemsToClone.length; i < items.length; i++) {
+            const clone = items[i >= 0 ? i : 0].cloneNode(true);
             clone.classList.add('cloned-item');
             container.insertBefore(clone, container.firstChild);
         }
@@ -518,7 +500,8 @@ function setupProductCarousel() {
         // Initial scroll position to show original items
         setTimeout(() => {
             const totalCloneWidth = itemsToClone.reduce((sum, i) => {
-                return sum + items[i].offsetWidth + gapWidth;
+                return sum + items[i].offsetWidth + 
+                        parseInt(window.getComputedStyle(container).columnGap || 0);
             }, 0);
             
             container.scrollLeft = totalCloneWidth;
@@ -535,58 +518,33 @@ function setupProductCarousel() {
         
         const originalItemsWidth = Array.from(items).reduce((sum, item) => {
             return sum + item.offsetWidth + 
-                  parseInt(window.getComputedStyle(container).columnGap || 0);
+                    parseInt(window.getComputedStyle(container).columnGap || 0);
         }, 0);
         
         // We use the first and last few cloned items as our threshold
         const firstClones = container.querySelectorAll('.cloned-item:nth-child(-n+3)');
         const threshold = Array.from(firstClones).reduce((sum, item) => {
             return sum + item.offsetWidth + 
-                  parseInt(window.getComputedStyle(container).columnGap || 0);
+                    parseInt(window.getComputedStyle(container).columnGap || 0);
         }, 0);
         
         // Check if we've scrolled too far left or right and jump to the appropriate position
         if (container.scrollLeft < threshold / 2) {
             resetInProgress = true;
-            
-            // For smoother transition at boundaries, we'll briefly add a transition
-            // but not use scrollBehavior which can cause jumps
-            container.style.transition = 'none';
-            
-            // Store the current scroll position
-            const currentScroll = container.scrollLeft;
-            const targetScroll = currentScroll + originalItemsWidth;
-            
-            // Use requestAnimationFrame for smoother visual transition
-            requestAnimationFrame(() => {
-                container.scrollLeft = targetScroll;
-                
-                // Re-enable smooth scrolling after a brief delay
-                setTimeout(() => {
-                    container.style.transition = '';
-                    resetInProgress = false;
-                }, 50);
-            });
-        } else if (container.scrollLeft > originalItemsWidth + threshold / 2) {
+            container.style.scrollBehavior = 'auto';
+            container.scrollLeft += originalItemsWidth;
+            setTimeout(() => {
+                resetInProgress = false;
+                container.style.scrollBehavior = 'smooth';
+            }, 10);
+        } else if (container.scrollLeft > originalItemsWidth + threshold) {
             resetInProgress = true;
-            
-            // For smoother transition at boundaries
-            container.style.transition = 'none';
-            
-            // Store the current scroll position
-            const currentScroll = container.scrollLeft;
-            const targetScroll = currentScroll - originalItemsWidth;
-            
-            // Use requestAnimationFrame for smoother visual transition
-            requestAnimationFrame(() => {
-                container.scrollLeft = targetScroll;
-                
-                // Re-enable smooth scrolling after a brief delay
-                setTimeout(() => {
-                    container.style.transition = '';
-                    resetInProgress = false;
-                }, 50);
-            });
+            container.style.scrollBehavior = 'auto';
+            container.scrollLeft -= originalItemsWidth;
+            setTimeout(() => {
+                resetInProgress = false;
+                container.style.scrollBehavior = 'smooth';
+            }, 10);
         }
     }
     
