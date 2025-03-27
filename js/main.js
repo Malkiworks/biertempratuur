@@ -781,7 +781,26 @@ function setupProductCarousel() {
             <i class="fas fa-pause"></i>
         </button>
     `;
-    parent.insertBefore(controls, container.nextSibling);
+    
+    // Insert controls after the container with proper positioning
+    // This ensures they'll appear below the container rather than on top
+    const productsSection = document.querySelector('.cold-section');
+    if (productsSection) {
+        const existingControls = productsSection.querySelector('.carousel-controls');
+        if (existingControls) {
+            existingControls.remove();
+        }
+        
+        // Insert after the container but before the CTA section
+        const ctaContainer = productsSection.querySelector('.cta-container');
+        if (ctaContainer) {
+            ctaContainer.parentNode.insertBefore(controls, ctaContainer);
+        } else {
+            parent.appendChild(controls); // Fallback if CTA container not found
+        }
+    } else {
+        parent.appendChild(controls); // Fallback if products section not found
+    }
     
     // Add control functionality
     const controlButton = controls.querySelector('.carousel-control');

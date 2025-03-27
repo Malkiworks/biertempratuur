@@ -728,6 +728,10 @@ button:hover ~ .cursor-trailer,
     justify-content: center;
     gap: 20px;
     margin: 25px auto;
+    position: relative;
+    z-index: 20;
+    margin-top: 30px;
+    clear: both;
 }
 
 .carousel-control {
