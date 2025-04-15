@@ -1057,6 +1057,33 @@ button:hover ~ .cursor-trailer,
     letter-spacing: 1px;
 }
 
+.made-by {
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.made-by a {
+    color: var(--accent-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.made-by a:hover {
+    color: #ffdb4d;
+    text-decoration: underline;
+}
+
+.heart {
+    color: #ff4d4d;
+    display: inline-block;
+    animation: heartbeat 1.5s infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
 /* ===== Animations ===== */
 @keyframes droplet {
     0% {
