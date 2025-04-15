@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality - BierTempratuur</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- GSAP and ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Additional GSAP plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/EasePack.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body id="top">
+    <!-- Loader -->
+    <div class="loader">
+        <div class="loader-content">
+            <img src="assets/logo/logo.jpg" alt="BierTempratuur Logo" class="loader-logo">
+            <div class="temperature-bar">
+                <div class="temperature-level"></div>
+            </div>
+            <p class="loader-text">Word Ys-Koud...</p>
+        </div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-trailer"></div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-logo">
+            <a href="index.html">
+                <img src="assets/logo/logo.jpg" alt="BierTempratuur Logo">
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Tuis</a>
+            <a href="index.html#product-section" class="nav-link">Produkte</a>
+            <a href="contact.html" class="nav-link">Kontak</a>
+            <div class="nav-dropdown">
+                <a href="#" class="nav-link dropdown-toggle">Meer <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    <a href="quality.html" class="dropdown-item active">Kwaliteit</a>
+                    <a href="terms.html" class="dropdown-item">Terme</a>
+                    <a href="privacy.html" class="dropdown-item">Privaatheid</a>
+                </div>
+            </div>
+        </div>
+        <div class="nav-social">
+            <a href="https://www.instagram.com/bier_tempratuur/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+        </div>
+    </nav>
+
+    <!-- Main Content Sections -->
+    <main>
+        <!-- Page Header Section -->
+        <section class="section page-header">
+            <div class="parallax-bg cold-bg"></div>
+            <div class="snowflakes"></div>
+            <div class="content-container">
+                <h1 class="main-title">Ons Kwaliteit</h1>
+                <p class="subtitle">BierTempratuur™</p>
+            </div>
+        </section>
+
+        <!-- Quality Content Section -->
+        <section class="section quality-section">
+            <div class="parallax-bg transition-bg"></div>
+            <div class="content-container">
+                <div class="quality-intro">
+                    <h2 class="section-title">Kwaliteit is Ons Prioriteit</h2>
+                    <p class="section-description">By BierTempratuur™ is ons toegewyd aan die lewering van produkte van die hoogste kwaliteit.</p>
+                </div>
+                
+                <div class="quality-features">
+                    <div class="quality-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3>Premium Materiale</h3>
+                        <p>Ons gebruik slegs die beste materiale om te verseker dat elke produk voldoen aan ons hoë standaarde.</p>
+                    </div>
+                    
+                    <div class="quality-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <h3>Kwaliteitskontrole</h3>
+                        <p>Elke item word noukeurig geïnspekteer voordat dit ons fasiliteit verlaat om konsekwente kwaliteit te verseker.</p>
+                    </div>
+                    
+                    <div class="quality-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <h3>Handgemaak</h3>
+                        <p>Ons produkte word met die hand vervaardig, wat ons in staat stel om aandag aan detail te gee wat massaproduksie nie kan nie.</p>
+                    </div>
+                    
+                    <div class="quality-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h3>Omgewingsvriendelik</h3>
+                        <p>Ons is verbind tot volhoubare praktyke en die minimalisering van ons impak op die omgewing.</p>
+                    </div>
+                </div>
+                
+                <div class="quality-process">
+                    <h2 class="section-title">Ons Kwaliteitsproses</h2>
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Keuse van Materiale</h3>
+                                <p>Ons begin met die noukeurige keuse van premium materiale van betroubare verskaffers.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Presisieproduksie</h3>
+                                <p>Elke item word vervaardig met presisie en aandag aan detail deur ons ervare vakmanskap.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Strengetoetsing</h3>
+                                <p>Ons produkte ondergaan streng toetsprosesse om duursaamheid en funksionaliteit te verseker.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="process-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>Finale Inspeksie</h3>
+                                <p>Voor verpakking ondergaan elke item 'n finale inspeksie om te verseker dat dit aan ons hoë standaarde voldoen.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quality-commitment">
+                    <h2 class="section-title">Ons Verbintenis</h2>
+                    <div class="commitment-content">
+                        <div class="commitment-image">
+                            <img src="products/product1.jpg" alt="Quality Commitment">
+                        </div>
+                        <div class="commitment-text">
+                            <p>By BierTempratuur™ strek ons verbintenis tot kwaliteit verder as net die produkte wat ons verkoop. Dit omvat elke aspek van ons besigheid, van kliëntediens tot verpakking en aflewering.</p>
+                            <p>Ons glo dat kwaliteit 'n deurlopende proses is, en ons streef voortdurend daarna om ons produkte en dienste te verbeter. Ons luister na terugvoer van ons kliënte en gebruik dit om ons aanbiedinge te verbeter.</p>
+                            <p>Elke BierTempratuur™-produk word vergesel van 'n Egtheidsertifikaat, wat ons toewyding aan kwaliteit en uniekheid verteenwoordig.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quality-guarantee">
+                    <div class="guarantee-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>100% Kwaliteitswaarborg</span>
+                    </div>
+                    <p>As jy nie heeltemal tevrede is met jou BierTempratuur™-produk nie, kontak ons binne 30 dae vir 'n vervanging of terugbetaling.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-logo">
+            <img src="assets/logo/logo.jpg" alt="BierTempratuur Logo">
+        </div>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>About Us</h4>
+                <p>BierTempratuur is a premium lifestyle brand established in 2024, focused on authentic, limited-edition apparel.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Connect</h4>
+                <div class="footer-social">
+                    <a href="https://www.instagram.com/bier_tempratuur/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Links</h4>
+                <ul class="footer-links">
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="quality.html">Quality</a></li>
+                    <li><a href="terms.html">Terms</a></li>
+                    <li><a href="privacy.html">Privacy</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Contact</h4>
+                <p>Email: info@biertempratuur.co.za</p>
+                <p>Instagram: @bier_tempratuur</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 BierTempratuur. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html> 
