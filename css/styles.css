@@ -69,6 +69,10 @@ main {
 .loader-logo {
     width: 150px; /* Larger logo */
     animation: pulse 2s infinite;
+    border-radius: 50%; /* Make the logo circular */
+    object-fit: cover; /* Ensure the image fills the circular container */
+    aspect-ratio: 1/1; /* Maintain a perfect circle */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Add a subtle glow */
 }
 
 .temperature-bar {
@@ -2673,4 +2677,31 @@ html, body {
     .contact-info-card.full-width {
         padding: 30px;
     }
-} 
+}
+
+/* Yoco payment button */
+.yoco-checkout-btn {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px 16px;
+    background-color: #0047cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.yoco-checkout-btn:hover {
+    background-color: #0035a0;
+}
+
+.yoco-checkout-btn i {
+    margin-right: 8px;
+}
+
+/* Remove Yoco Payment Modal styles as we're using hosted payment page */
